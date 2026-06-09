@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#7c2d12"/>
+  <!-- Body armor -->
+  <ellipse cx="50" cy="85" rx="27" ry="20" fill="#c2410c"/>
+  <!-- Armor chest plate -->
+  <polygon points="35,68 50,60 65,68 62,85 38,85" fill="#ea580c"/>
+  <!-- Chest detail -->
+  <polygon points="50,63 55,70 50,74 45,70" fill="#fbbf24"/>
+  <!-- Pauldrons (shoulder guards) -->
+  <ellipse cx="30" cy="70" rx="9" ry="6" fill="#c2410c"/>
+  <ellipse cx="70" cy="70" rx="9" ry="6" fill="#c2410c"/>
+  <!-- Face -->
+  <circle cx="50" cy="46" r="17" fill="#fcd9a8"/>
+  <!-- Helmet -->
+  <path d="M33,40 Q33,22 50,20 Q67,22 67,40 L65,42 Q65,30 50,28 Q35,30 35,42 Z" fill="#b45309"/>
+  <!-- Helmet visor/ridge -->
+  <rect x="33" y="38" width="34" height="5" rx="2" fill="#92400e"/>
+  <!-- Eyes -->
+  <circle cx="43" cy="46" r="3" fill="#1e293b"/>
+  <circle cx="57" cy="46" r="3" fill="#1e293b"/>
+  <circle cx="44" cy="45" r="1" fill="white"/>
+  <circle cx="58" cy="45" r="1" fill="white"/>
+  <!-- Scar -->
+  <path d="M53 42 L56 50" stroke="#dc2626" stroke-width="1" stroke-linecap="round"/>
+  <!-- Jaw/chin -->
+  <path d="M40 55 Q50 62 60 55" stroke="#d97706" stroke-width="2" fill="none"/>
+  <!-- Nose -->
+  <ellipse cx="50" cy="50" rx="2" ry="1.5" fill="#e8b88a"/>
+</svg>

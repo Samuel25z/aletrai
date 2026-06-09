@@ -1,69 +1,96 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth, calcularMembro } from '../context/AuthContext';
+import LogoMarca from './LogoMarca';
+
+const NAV = [
+  { to: '/jogos',      icon: '🎮', label: 'Jogos' },
+  { to: '/conquistas', icon: '🏆', label: 'Conquistas' },
+  { to: '/perfil',     icon: '👤', label: 'Perfil' },
+];
 
 export default function Layout({ children }) {
   const { usuario } = useAuth();
+  const navigate = useNavigate();
   const xpTotal = usuario?.xpTotal || usuario?.xp || 0;
   const { membro } = calcularMembro(xpTotal);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-5 py-3 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-violet-600 rounded-xl flex items-center justify-center">
-            <span className="text-base">🧠</span>
+    <div className="min-h-screen bg-gray-50 flex">
+
+      {/* ── Sidebar desktop (lg+) ── */}
+      <aside className="hidden lg:flex flex-col w-60 min-h-screen bg-white border-r border-gray-100 fixed top-0 left-0 z-20">
+        {/* Logo */}
+        <div className="px-6 py-6 border-b border-gray-100">
+          <LogoMarca size={26} variant="dark" />
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {NAV.map(({ to, icon, label }) => (
+            <NavLink key={to} to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+                  isActive
+                    ? 'bg-violet-600 text-white'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                }`
+              }>
+              <span className="text-lg">{icon}</span>
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Usuário */}
+        <div className="px-4 py-4 border-t border-gray-100">
+          <div className="flex items-center gap-3 px-2 py-2 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-violet-100 overflow-hidden flex items-center justify-center text-base">
+              {usuario?.avatar && !usuario.avatar.includes('/')
+                ? <img src={`/avatares/${usuario.avatar}.svg`} alt="avatar" className="w-full h-full object-cover" />
+                : <span>{usuario?.avatar || '🎓'}</span>
+              }
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900 truncate">{usuario?.nome?.split(' ')[0]}</p>
+              <p className="text-xs text-gray-400">{membro.emoji} {membro.nome}</p>
+            </div>
           </div>
-          <span className="font-bold text-gray-900 text-lg tracking-tight">
-            Aletr<span className="text-violet-600">AI</span>
-          </span>
         </div>
-        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${membro.bg} border-current ${membro.cor}`}>
-          <span>{membro.emoji}</span>
-          <span>{membro.nome}</span>
-        </div>
-      </header>
+      </aside>
 
-      {/* Conteúdo */}
-      <main className="flex-1 overflow-auto pb-20">
-        {children}
-      </main>
+      {/* ── Conteúdo principal ── */}
+      <div className="flex-1 flex flex-col lg:ml-60">
 
-      {/* Bottom nav — 3 abas: Jogos | Conquistas | Perfil */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-10">
-        <NavLink to="/jogos"
-          className={({ isActive }) => `flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-all ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>
-          {({ isActive }) => (
-            <>
-              <span className={`text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>🎮</span>
-              <span className={`text-xs font-medium ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>Jogos</span>
-              {isActive && <div className="w-1 h-1 rounded-full bg-violet-600" />}
-            </>
-          )}
-        </NavLink>
+        {/* Header mobile (< lg) */}
+        <header className="lg:hidden flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100 sticky top-0 z-10">
+          <LogoMarca size={22} variant="dark" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-xs font-bold">
+            <span>{membro.emoji}</span>
+            <span>{membro.nome}</span>
+          </div>
+        </header>
 
-        <NavLink to="/conquistas"
-          className={({ isActive }) => `flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-all ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>
-          {({ isActive }) => (
-            <>
-              <span className={`text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>🏆</span>
-              <span className={`text-xs font-medium ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>Conquistas</span>
-              {isActive && <div className="w-1 h-1 rounded-full bg-violet-600" />}
-            </>
-          )}
-        </NavLink>
+        {/* Página */}
+        <main className="flex-1 pb-24 lg:pb-0">
+          {children}
+        </main>
+      </div>
 
-        <NavLink to="/perfil"
-          className={({ isActive }) => `flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-all ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>
-          {({ isActive }) => (
-            <>
-              <span className={`text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>👤</span>
-              <span className={`text-xs font-medium ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>Perfil</span>
-              {isActive && <div className="w-1 h-1 rounded-full bg-violet-600" />}
-            </>
-          )}
-        </NavLink>
+      {/* ── Bottom nav mobile (< lg) ── */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-20">
+        {NAV.map(({ to, icon, label }) => (
+          <NavLink key={to} to={to}
+            className={() => 'flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5'}>
+            {({ isActive }) => (
+              <>
+                <span className={`text-2xl transition-transform ${isActive ? 'scale-110' : 'opacity-40'}`}>{icon}</span>
+                <span className={`text-xs font-bold ${isActive ? 'text-violet-600' : 'text-gray-400'}`}>{label}</span>
+                {isActive && <div className="w-4 h-0.5 rounded-full bg-violet-600 mt-0.5" />}
+              </>
+            )}
+          </NavLink>
+        ))}
       </nav>
     </div>
   );

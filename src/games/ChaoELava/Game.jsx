@@ -832,6 +832,15 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden select-none">
+      {/* Botão de sair */}
+      <div className="absolute top-3 left-3 z-50">
+        <button
+          onClick={() => onSair({ xpGanho: Math.max(10, Math.floor(score / 10)) })}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20">
+          ← Sair
+        </button>
+      </div>
+
       <div className="relative w-full flex-1 flex items-center justify-center">
         <canvas ref={canvasRef} width={GW} height={GH}
           style={{ display:'block', imageRendering:'pixelated', maxWidth:'100%', maxHeight:'calc(100vh - 80px)', objectFit:'contain' }}

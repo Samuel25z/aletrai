@@ -10,3 +10,17 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Acessibilidade: fonte grande */
+html.fonte-grande {
+  font-size: 112.5%; /* 18px em vez de 16px — escala tudo proporcionalmente */
+}
+
+/* Acessibilidade: alto contraste */
+html.alto-contraste {
+  filter: contrast(1.5) brightness(0.92);
+}
+html.alto-contraste img,
+html.alto-contraste video {
+  filter: contrast(1.1); /* evita imagens muito escuras */
+}

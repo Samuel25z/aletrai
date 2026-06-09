@@ -2,116 +2,352 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const avatares = ['🎓','🚀','🦊','🐉','🧠','⚡','🌟','🎮','🐺','🦁'];
+const avatares = [
+  { id: 'mago',       label: 'Mago',       src: '/avatares/mago.svg'       },
+  { id: 'ninja',      label: 'Ninja',      src: '/avatares/ninja.svg'      },
+  { id: 'astronauta', label: 'Astronauta', src: '/avatares/astronauta.svg' },
+  { id: 'robo',       label: 'Robô',       src: '/avatares/robo.svg'       },
+  { id: 'guerreiro',  label: 'Guerreiro',  src: '/avatares/guerreiro.svg'  },
+  { id: 'cientista',  label: 'Cientista',  src: '/avatares/cientista.svg'  },
+  { id: 'hacker',     label: 'Hacker',     src: '/avatares/hacker.svg'     },
+  { id: 'pirata',     label: 'Pirata',     src: '/avatares/pirata.svg'     },
+  { id: 'elfa',       label: 'Elfa',       src: '/avatares/elfa.svg'       },
+  { id: 'vampiro',    label: 'Vampiro',    src: '/avatares/vampiro.svg'    },
+  { id: 'druida',     label: 'Druida',     src: '/avatares/druida.svg'     },
+  { id: 'explorador', label: 'Explorador', src: '/avatares/explorador.svg' },
+];
+
+function Toggle({ ativo, onChange }) {
+  return (
+    <button onClick={onChange}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${ativo ? 'bg-violet-600' : 'bg-gray-200'}`}>
+      <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300 ${ativo ? 'left-5' : 'left-0.5'}`} />
+    </button>
+  );
+}
+
+function usePreferencia(chave) {
+  const [ativo, setAtivo] = useState(() => localStorage.getItem(chave) === 'true');
+  function toggle() {
+    const novo = !ativo;
+    setAtivo(novo);
+    localStorage.setItem(chave, String(novo));
+    return novo;
+  }
+  return [ativo, toggle];
+}
+
+function Acessibilidade() {
+  const [fonteGrande,    toggleFonte]    = usePreferencia('aletrai_fonte_grande');
+  const [altoContraste,  toggleContraste] = usePreferencia('aletrai_alto_contraste');
+  const [lembretes,      toggleLembretes] = usePreferencia('aletrai_lembretes');
+
+  function handleFonte() {
+    const novo = toggleFonte();
+    document.documentElement.classList.toggle('fonte-grande', novo);
+  }
+
+  function handleContraste() {
+    const novo = toggleContraste();
+    document.documentElement.classList.toggle('alto-contraste', novo);
+  }
+
+  async function handleLembretes() {
+    if (!('Notification' in window)) {
+      alert('Seu navegador não suporta notificações.');
+      return;
+    }
+    if (!lembretes) {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        alert('Permissão negada. Ative nas configurações do navegador.');
+        return;
+      }
+      toggleLembretes();
+      new Notification('AletrAI 🎮', {
+        body: 'Lembretes ativados! Você receberá um aviso diário para estudar.',
+        icon: '/favicon.ico',
+      });
+      localStorage.setItem('aletrai_ultimo_lembrete', String(Date.now()));
+    } else {
+      toggleLembretes();
+    }
+  }
+
+  return (
+    <div>
+      <h3 className="font-bold text-gray-900 mb-3">Acessibilidade</h3>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
+        {[
+          {
+            ic: '🔠', label: 'Fonte grande',
+            desc: 'Aumenta o tamanho do texto no app todo',
+            ativo: fonteGrande, fn: handleFonte,
+          },
+          {
+            ic: '🔆', label: 'Alto contraste',
+            desc: 'Intensifica as cores para melhor visibilidade',
+            ativo: altoContraste, fn: handleContraste,
+          },
+          {
+            ic: '🔔', label: 'Lembretes diários',
+            desc: 'Notificação do navegador para estudar todo dia',
+            ativo: lembretes, fn: handleLembretes,
+          },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center justify-between px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <span>{item.ic}</span>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">{item.label}</p>
+                <p className="text-xs text-gray-400">{item.desc}</p>
+              </div>
+            </div>
+            <Toggle ativo={item.ativo} onChange={item.fn} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function hashSenha(senha) {
+  const data = new TextEncoder().encode(senha);
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function ConfigAPI() {
+  const salva = !!localStorage.getItem('aletrai_claude_key');
+  const [aberta, setAberta] = useState(false);
+  const [chave, setChave]   = useState('');
+  const [status, setStatus] = useState(salva ? 'salva' : 'vazia');
+
+  function salvar() {
+    if (!chave.startsWith('sk-ant')) return;
+    localStorage.setItem('aletrai_claude_key', chave);
+    setStatus('salva'); setChave(''); setAberta(false);
+  }
+  function remover() {
+    localStorage.removeItem('aletrai_claude_key');
+    setStatus('vazia'); setAberta(false);
+  }
+
+  return (
+    <div>
+      <h3 className="font-bold text-gray-900 mb-3">Inteligência Artificial</h3>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <button onClick={() => setAberta(a => !a)}
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <span className="text-lg">🔑</span>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-gray-800">Chave API Claude</p>
+              <p className="text-xs text-gray-400">Necessária para gerar perguntas com IA</p>
+            </div>
+          </div>
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+            status === 'salva' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-100 text-gray-400'
+          }`}>
+            {status === 'salva' ? '✓ Ativa' : 'Não configurada'}
+          </span>
+        </button>
+        {aberta && (
+          <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+            <p className="text-xs text-gray-400">Cole sua chave Anthropic para ativar a IA nos jogos.</p>
+            <input type="password" value={chave} onChange={e => setChave(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && salvar()} placeholder="sk-ant-..."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500"/>
+            <div className="flex gap-2">
+              <button onClick={salvar} disabled={!chave.startsWith('sk-ant')}
+                className="flex-1 py-2 bg-violet-600 disabled:opacity-30 text-white text-sm font-bold rounded-xl">
+                Salvar
+              </button>
+              {status === 'salva' && (
+                <button onClick={remover}
+                  className="px-4 py-2 text-red-500 text-sm font-bold rounded-xl bg-red-50 border border-red-100">
+                  Remover
+                </button>
+              )}
+            </div>
+            <a href="https://console.anthropic.com" target="_blank" rel="noreferrer"
+              className="block text-center text-xs text-violet-600 hover:underline">
+              Obter chave → console.anthropic.com
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TrocarSenha({ usuario, atualizarUsuario }) {
+  const [aberta, setAberta]         = useState(false);
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha, setNovaSenha]   = useState('');
+  const [confirmar, setConfirmar]   = useState('');
+  const [erro, setErro]             = useState('');
+  const [ok, setOk]                 = useState(false);
+  const [loading, setLoading]       = useState(false);
+
+  const forca = novaSenha.length === 0 ? 0 : novaSenha.length < 6 ? 1 : novaSenha.length < 10 ? 2 : 3;
+  const forcaCor = ['','#ef4444','#f59e0b','#22c55e'][forca];
+  const forcaTxt = ['','Fraca','Média','Forte'][forca];
+
+  async function salvar() {
+    setErro(''); setOk(false);
+    if (!senhaAtual) return setErro('Informe sua senha atual.');
+    if (novaSenha.length < 6) return setErro('A nova senha precisa ter pelo menos 6 caracteres.');
+    if (novaSenha !== confirmar) return setErro('As senhas não coincidem.');
+    setLoading(true);
+    const hashAtual = await hashSenha(senhaAtual);
+    if (hashAtual !== usuario.senhaHash) {
+      setLoading(false);
+      return setErro('Senha atual incorreta.');
+    }
+    const novoHash = await hashSenha(novaSenha);
+    await atualizarUsuario({ senhaHash: novoHash });
+    setLoading(false);
+    setOk(true);
+    setSenhaAtual(''); setNovaSenha(''); setConfirmar('');
+    setTimeout(() => { setAberta(false); setOk(false); }, 1500);
+  }
+
+  return (
+    <div className="border-t border-gray-100">
+      <button onClick={() => { setAberta(a => !a); setErro(''); setOk(false); }}
+        className="w-full flex items-center justify-between px-4 py-3.5">
+        <span className="text-sm font-semibold text-gray-800">Alterar senha</span>
+        <span className="text-xs text-gray-400">{aberta ? '▲' : '▼'}</span>
+      </button>
+
+      {aberta && (
+        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+          {[
+            { label: 'Senha atual',     val: senhaAtual, set: setSenhaAtual, ph: '••••••••' },
+            { label: 'Nova senha',      val: novaSenha,  set: setNovaSenha,  ph: 'Mínimo 6 caracteres' },
+            { label: 'Confirmar senha', val: confirmar,  set: setConfirmar,  ph: 'Repita a nova senha' },
+          ].map(({ label, val, set, ph }) => (
+            <div key={label}>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">{label}</label>
+              <input type="password" value={val} onChange={e => set(e.target.value)} placeholder={ph}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500"/>
+              {label === 'Nova senha' && novaSenha.length > 0 && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${(forca/3)*100}%`, background: forcaCor }}/>
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: forcaCor }}>{forcaTxt}</span>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {erro && <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-xl">{erro}</p>}
+          {ok   && <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-xl">✓ Senha alterada com sucesso!</p>}
+
+          <button onClick={salvar} disabled={loading}
+            className="w-full py-2.5 bg-violet-600 disabled:opacity-50 text-white text-sm font-black rounded-xl transition-colors">
+            {loading ? 'Verificando...' : 'Salvar nova senha'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Perfil() {
   const { usuario, atualizarUsuario, logout } = useAuth();
   const navigate = useNavigate();
-  const [fonteGrande, setFonteGrande] = useState(false);
-  const [altoContraste, setAltoContraste] = useState(false);
-  const [lembretes, setLembretes] = useState(true);
-  const [voz, setVoz] = useState(true);
   const [confirmandoLogout, setConfirmandoLogout] = useState(false);
 
-  function sair() {
-    logout();
-    navigate('/login');
-  }
+  function sair() { logout(); navigate('/login'); }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-5">
-      <div className="bg-gradient-to-br from-violet-700 to-purple-500 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+    <div className="max-w-2xl mx-auto px-5 pt-6 pb-8 space-y-5">
+
+      {/* Header */}
+      <div className="bg-violet-600 rounded-3xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-full -translate-y-10 translate-x-10"/>
         <div className="relative z-10 flex items-center gap-4">
-          <div className="w-16 h-16 bg-white/20 border-2 border-white/30 rounded-full flex items-center justify-center text-4xl">
-            {usuario.avatar}
+          <div className="w-16 h-16 bg-white/20 border-2 border-white/30 rounded-full overflow-hidden flex items-center justify-center">
+            {(() => {
+              const av = avatares.find(a => a.id === usuario.avatar);
+              return av
+                ? <img src={av.src} alt={av.label} className="w-full h-full object-cover" />
+                : <span className="text-4xl">{usuario.avatar}</span>;
+            })()}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">{usuario.nome}</h2>
-            <p className="text-violet-200 text-sm">Nível {usuario.nivel} • {usuario.desafiosConcluidos} desafios</p>
-            <p className="text-violet-300 text-xs mt-0.5">Membro desde {usuario.criadoEm}</p>
+            <h2 className="text-xl font-black text-white">{usuario.nome}</h2>
+            <p className="text-violet-200 text-sm">{usuario.desafiosConcluidos || 0} desafios concluídos</p>
+            <p className="text-violet-300 text-xs mt-0.5">{usuario.email}</p>
           </div>
         </div>
       </div>
 
+      {/* Avatar */}
       <div>
         <h3 className="font-bold text-gray-900 mb-3">Escolha seu avatar</h3>
         <div className="flex flex-wrap gap-2">
           {avatares.map(av => (
-            <button
-              key={av}
-              onClick={() => atualizarUsuario({ avatar: av })}
-              className={`w-12 h-12 rounded-2xl text-2xl flex items-center justify-center transition-all border-2 ${
-                usuario.avatar === av ? 'border-violet-500 bg-violet-50 scale-110' : 'border-gray-200 bg-white hover:border-violet-300 hover:scale-105'
-              }`}
-            >
-              {av}
+            <button key={av.id} onClick={() => atualizarUsuario({ avatar: av.id })}
+              title={av.label}
+              className={`w-14 h-14 rounded-2xl overflow-hidden transition-all border-2 ${
+                usuario.avatar === av.id
+                  ? 'border-violet-500 scale-110 shadow-md shadow-violet-200'
+                  : 'border-gray-200 bg-white hover:border-violet-300 hover:scale-105'
+              }`}>
+              <img src={av.src} alt={av.label} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-4 flex gap-3">
-        <span className="text-2xl flex-shrink-0">🎨</span>
-        <div>
-          <p className="font-semibold text-violet-900 text-sm">Personalização em breve!</p>
-          <p className="text-violet-600 text-xs mt-0.5">Cores de fundo, temas, fontes e muito mais. Sua plataforma, do seu jeito.</p>
-        </div>
+      {/* Personalização em breve */}
+      <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4">
+        <p className="font-semibold text-violet-900 text-sm">Personalização em breve!</p>
+        <p className="text-violet-600 text-xs mt-0.5">Cores de fundo, temas e fontes. Sua plataforma, do seu jeito.</p>
       </div>
 
-      <div>
-        <h3 className="font-bold text-gray-900 mb-3">Acessibilidade</h3>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
-          {[
-            { ic: '🔠', label: 'Fonte grande', val: fonteGrande, set: setFonteGrande },
-            { ic: '🔆', label: 'Alto contraste', val: altoContraste, set: setAltoContraste },
-            { ic: '🎤', label: 'Comandos por voz', val: voz, set: setVoz },
-            { ic: '🔔', label: 'Lembretes diários', val: lembretes, set: setLembretes },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm font-medium text-gray-800 flex items-center gap-2">
-                <span>{item.ic}</span> {item.label}
-              </span>
-              <button
-                onClick={() => item.set(v => !v)}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${item.val ? 'bg-violet-500' : 'bg-gray-300'}`}
-              >
-                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300 ${item.val ? 'left-5' : 'left-0.5'}`}></div>
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Acessibilidade */}
+      <Acessibilidade />
 
+      {/* IA */}
+      <ConfigAPI />
+
+      {/* Conta */}
       <div>
         <h3 className="font-bold text-gray-900 mb-3">Conta</h3>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-100">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-600">E-mail</span>
-            <span className="text-sm font-medium text-gray-900">{usuario.email}</span>
+          <div className="px-4 py-3.5 flex items-center justify-between">
+            <span className="text-sm text-gray-500">Nome</span>
+            <span className="text-sm font-semibold text-gray-900">{usuario.nome}</span>
           </div>
-          <div className="px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-600">Nome</span>
-            <span className="text-sm font-medium text-gray-900">{usuario.nome}</span>
+          <div className="px-4 py-3.5 flex items-center justify-between">
+            <span className="text-sm text-gray-500">E-mail</span>
+            <span className="text-sm font-semibold text-gray-900">{usuario.email}</span>
           </div>
+          <TrocarSenha usuario={usuario} atualizarUsuario={atualizarUsuario} />
         </div>
       </div>
 
+      {/* Logout */}
       {!confirmandoLogout ? (
-        <button
-          onClick={() => setConfirmandoLogout(true)}
-          className="w-full py-3 border-2 border-red-200 text-red-500 font-semibold rounded-xl hover:bg-red-50 transition-colors"
-        >
+        <button onClick={() => setConfirmandoLogout(true)}
+          className="w-full py-3 border-2 border-red-200 text-red-500 font-bold rounded-2xl hover:bg-red-50 transition-colors text-sm">
           Sair da conta
         </button>
       ) : (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
-          <p className="text-center text-sm font-medium text-red-800">Tem certeza que quer sair?</p>
+          <p className="text-center text-sm font-bold text-red-800">Tem certeza que quer sair?</p>
           <div className="flex gap-2">
-            <button onClick={() => setConfirmandoLogout(false)} className="flex-1 py-2 border-2 border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">
+            <button onClick={() => setConfirmandoLogout(false)}
+              className="flex-1 py-2.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl text-sm">
               Cancelar
             </button>
-            <button onClick={sair} className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors text-sm">
+            <button onClick={sair}
+              className="flex-1 py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm">
               Confirmar saída
             </button>
           </div>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#14532d"/>
+  <!-- Body -->
+  <ellipse cx="50" cy="85" rx="26" ry="20" fill="#166534"/>
+  <!-- Cloak -->
+  <polygon points="35,65 50,58 65,65 62,85 38,85" fill="#15803d"/>
+  <!-- Leaf brooch -->
+  <ellipse cx="50" cy="65" rx="5" ry="3" fill="#4ade80" transform="rotate(-30,50,65)"/>
+  <!-- Face -->
+  <circle cx="50" cy="46" r="17" fill="#fde68a"/>
+  <!-- Long silver hair -->
+  <ellipse cx="50" cy="32" rx="18" ry="12" fill="#e2e8f0"/>
+  <rect x="28" y="32" width="8" height="30" rx="4" fill="#e2e8f0"/>
+  <rect x="64" y="32" width="8" height="30" rx="4" fill="#e2e8f0"/>
+  <!-- Pointed ears -->
+  <polygon points="32,42 22,36 30,48" fill="#fde68a"/>
+  <polygon points="68,42 78,36 70,48" fill="#fde68a"/>
+  <!-- Eyes - almond shaped, green -->
+  <ellipse cx="43" cy="45" rx="5" ry="3.5" fill="#052e16"/>
+  <ellipse cx="57" cy="45" rx="5" ry="3.5" fill="#052e16"/>
+  <ellipse cx="43" cy="45" rx="3.5" ry="2.5" fill="#16a34a"/>
+  <ellipse cx="57" cy="45" rx="3.5" ry="2.5" fill="#16a34a"/>
+  <circle cx="44" cy="44" r="1" fill="white"/>
+  <circle cx="58" cy="44" r="1" fill="white"/>
+  <!-- Eyebrows - thin and arched -->
+  <path d="M38 41 Q43 38 48 41" stroke="#a16207" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M52 41 Q57 38 62 41" stroke="#a16207" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Lips -->
+  <path d="M44 53 Q50 57 56 53" stroke="#d97706" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Crown/tiara -->
+  <path d="M34,36 L38,28 L42,34 L50,24 L58,34 L62,28 L66,36" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  <circle cx="50" cy="24" r="2.5" fill="#4ade80"/>
+</svg>

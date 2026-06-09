@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#1e1b4b"/>
+  <!-- Cape body -->
+  <ellipse cx="50" cy="85" rx="28" ry="20" fill="#3730a3"/>
+  <!-- Cape inner -->
+  <polygon points="40,68 50,63 60,68 58,85 42,85" fill="#dc2626"/>
+  <!-- Collar points -->
+  <polygon points="38,60 30,50 44,58" fill="#3730a3"/>
+  <polygon points="62,60 70,50 56,58" fill="#3730a3"/>
+  <!-- Face - pale -->
+  <circle cx="50" cy="46" r="17" fill="#e2e8f0"/>
+  <!-- Slicked black hair -->
+  <ellipse cx="50" cy="30" rx="18" ry="10" fill="#1e1b4b"/>
+  <path d="M50,28 Q50,20 50,16" stroke="#1e1b4b" stroke-width="6" stroke-linecap="round"/>
+  <!-- Hair side sweep -->
+  <path d="M33,35 Q28,25 35,20" stroke="#1e1b4b" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Widow's peak -->
+  <polygon points="50,36 44,30 56,30" fill="#1e1b4b"/>
+  <!-- Eyes - red and intense -->
+  <ellipse cx="43" cy="45" rx="5" ry="4" fill="#0f172a"/>
+  <ellipse cx="57" cy="45" rx="5" ry="4" fill="#0f172a"/>
+  <ellipse cx="43" cy="45" rx="3.5" ry="2.8" fill="#dc2626"/>
+  <ellipse cx="57" cy="45" rx="3.5" ry="2.8" fill="#dc2626"/>
+  <circle cx="44" cy="44" r="1" fill="#fca5a5"/>
+  <circle cx="58" cy="44" r="1" fill="#fca5a5"/>
+  <!-- Thin eyebrows -->
+  <path d="M38 40 Q43 37 48 40" stroke="#1e1b4b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M52 40 Q57 37 62 40" stroke="#1e1b4b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Smirk with fangs -->
+  <path d="M42 53 Q50 58 58 53" stroke="#94a3b8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <polygon points="46,54 44,60 48,60" fill="white"/>
+  <polygon points="54,54 52,60 56,60" fill="white"/>
+  <!-- Nose -->
+  <path d="M48 50 L50 53 L52 50" stroke="#94a3b8" stroke-width="1" fill="none"/>
+</svg>

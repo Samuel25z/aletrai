@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LogoMarca from '../components/LogoMarca';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,14 +38,8 @@ export default function Login() {
 
         <div className="relative z-10 text-center max-w-sm">
           {/* Logo */}
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)', boxShadow: '0 0 40px rgba(124,58,237,0.5)' }}>
-            <span className="text-3xl">🧠</span>
-          </div>
+          <LogoMarca size={40} variant="light" className="mb-6 mx-auto" />
 
-          <h1 className="text-5xl font-black text-white mb-2 tracking-tight">
-            Aletr<span style={{ color: '#a855f7' }}>AI</span>
-          </h1>
           <p className="text-purple-300 mb-10 text-base">Aprenda jogando. Evolua de verdade.</p>
 
           {/* Cards de features */}
@@ -72,12 +67,8 @@ export default function Login() {
         <div className="w-full max-w-md">
 
           {/* Logo mobile */}
-          <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
-              <span className="text-xl">🧠</span>
-            </div>
-            <span className="text-2xl font-black text-white">Aletr<span style={{ color: '#a855f7' }}>AI</span></span>
+          <div className="lg:hidden mb-10">
+            <LogoMarca size={28} />
           </div>
 
           <h2 className="text-3xl font-black text-white mb-1">Bem-vindo de volta!</h2>

@@ -2,90 +2,186 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-function ConfigAPI() {
-  const salva = !!localStorage.getItem('aletrai_claude_key');
-  const [aberta, setAberta] = useState(false);
-  const [chave, setChave] = useState('');
-  const [status, setStatus] = useState(salva ? 'salva' : 'vazia');
+// Partículas de fogo que saem para fora do card
+const CHAMAS = [
+  { left: '4%',  delay: '0s',     dur: '0.8s',  size: 14, cor: '#ff6b00' },
+  { left: '11%', delay: '0.18s',  dur: '0.95s', size: 20, cor: '#ffd000' },
+  { left: '19%', delay: '0.05s',  dur: '0.7s',  size: 11, cor: '#ff3300' },
+  { left: '27%', delay: '0.32s',  dur: '1.0s',  size: 22, cor: '#ff6b00' },
+  { left: '35%', delay: '0.12s',  dur: '0.75s', size: 16, cor: '#ffd000' },
+  { left: '43%', delay: '0.25s',  dur: '0.85s', size: 24, cor: '#ff4500' },
+  { left: '50%', delay: '0.0s',   dur: '0.9s',  size: 18, cor: '#ff6b00' },
+  { left: '58%', delay: '0.22s',  dur: '0.7s',  size: 13, cor: '#ffd000' },
+  { left: '66%', delay: '0.38s',  dur: '1.0s',  size: 20, cor: '#ff3300' },
+  { left: '74%', delay: '0.08s',  dur: '0.8s',  size: 17, cor: '#ff6b00' },
+  { left: '82%', delay: '0.15s',  dur: '0.9s',  size: 15, cor: '#ffd000' },
+  { left: '91%', delay: '0.28s',  dur: '0.75s', size: 12, cor: '#ff4500' },
+  { left: '97%', delay: '0.1s',   dur: '0.85s', size: 16, cor: '#ff6b00' },
+];
 
-  function salvar() {
-    if (!chave.startsWith('sk-ant')) return;
-    localStorage.setItem('aletrai_claude_key', chave);
-    setStatus('salva');
-    setChave('');
-    setAberta(false);
-  }
+function FogoEfeito() {
+  return (
+    <>
+      <style>{`
+        @keyframes chamaSubir {
+          0%   { transform: translateY(0) scaleX(1) rotate(0deg); opacity: 1; }
+          40%  { transform: translateY(-22px) scaleX(0.75) rotate(-4deg); opacity: 0.8; }
+          100% { transform: translateY(-60px) scaleX(0.2) rotate(6deg); opacity: 0; }
+        }
+        @keyframes brasaFlutuar {
+          0%   { transform: translateY(0) translateX(0); opacity: 1; }
+          100% { transform: translateY(-80px) translateX(8px); opacity: 0; }
+        }
+      `}</style>
 
-  function remover() {
-    localStorage.removeItem('aletrai_claude_key');
-    setStatus('vazia');
-    setAberta(false);
-  }
+      {/* Chamas principais */}
+      <div style={{ position: 'absolute', bottom: -2, left: 0, right: 0, height: 0, pointerEvents: 'none', zIndex: 30 }}>
+        {CHAMAS.map((c, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            bottom: 0,
+            left: c.left,
+            width: c.size,
+            height: c.size * 1.8,
+            borderRadius: '50% 50% 35% 35% / 60% 60% 40% 40%',
+            background: `radial-gradient(ellipse at 50% 90%, ${c.cor} 0%, #ff220088 60%, transparent 100%)`,
+            animation: `chamaSubir ${c.dur} ${c.delay} infinite ease-out`,
+            filter: 'blur(1px)',
+          }} />
+        ))}
+
+        {/* Brasas — pontinhos que flutuam */}
+        {[...Array(8)].map((_, i) => (
+          <div key={`brasa-${i}`} style={{
+            position: 'absolute',
+            bottom: 0,
+            left: `${10 + i * 12}%`,
+            width: 4,
+            height: 4,
+            borderRadius: '50%',
+            background: '#ffd700',
+            animation: `brasaFlutuar ${0.9 + i * 0.15}s ${i * 0.1}s infinite ease-out`,
+            boxShadow: '0 0 4px #ff6b00',
+          }} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+const MORCEGOS = [
+  { top: 15,  dur: 2.6, size: 26, dir:  1, offset: 0.1  },
+  { top: 60,  dur: 3.2, size: 17, dir: -1, offset: 0.55 },
+  { top: 90,  dur: 2.9, size: 22, dir:  1, offset: 0.75 },
+  { top: 35,  dur: 3.5, size: 13, dir:  1, offset: 0.35 },
+  { top: 75,  dur: 2.3, size: 19, dir: -1, offset: 0.6  },
+  { top: 110, dur: 2.7, size: 15, dir:  1, offset: 0.85 },
+  { top: 50,  dur: 3.0, size: 11, dir: -1, offset: 0.2  },
+];
+
+function MorcegosEfeito() {
+  return (
+    <>
+      <style>{`
+        @keyframes voarDir {
+          from { left: -50px; }
+          to   { left: 110%;  }
+        }
+        @keyframes voarEsq {
+          from { left: 110%;  }
+          to   { left: -50px; }
+        }
+        @keyframes baterAsas {
+          0%, 100% { transform: scaleY(1); }
+          50%       { transform: scaleY(0.3); }
+        }
+      `}</style>
+      {MORCEGOS.map((m, i) => {
+        // Delay negativo = morcego já nasce no meio do voo
+        const flyDelay = `${-(m.offset * m.dur).toFixed(2)}s`;
+        const wingDelay = `${-(m.offset * 0.22).toFixed(2)}s`;
+        return (
+          <span key={i} style={{
+            position: 'absolute',
+            top: m.top,
+            fontSize: m.size,
+            pointerEvents: 'none',
+            zIndex: 10,
+            transform: m.dir === -1 ? 'scaleX(-1)' : 'none',
+            animation: `${m.dir === 1 ? 'voarDir' : 'voarEsq'} ${m.dur}s ${flyDelay} infinite linear,
+                        baterAsas 0.22s ${wingDelay} infinite ease-in-out`,
+            filter: 'drop-shadow(0 0 5px rgba(100,0,180,0.9))',
+          }}>🦇</span>
+        );
+      })}
+    </>
+  );
+}
+
+function CardJogo({ jogo, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  const isLava    = jogo.id === 'chao-e-lava';
+  const isDungeon = jogo.id === 'dungeon-quiz';
 
   return (
-    <div className="mx-4 mb-4">
-      <button
-        onClick={() => setAberta(a => !a)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border transition-all"
-        style={{
-          background: status === 'salva' ? 'rgba(0,200,100,0.08)' : 'rgba(255,255,255,0.04)',
-          borderColor: status === 'salva' ? 'rgba(0,200,100,0.25)' : 'rgba(255,255,255,0.1)',
-        }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-base">🔑</span>
-          <span className="text-sm font-semibold text-white/80">Chave da API Claude</span>
-        </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${status === 'salva' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-gray-500'}`}>
-          {status === 'salva' ? '✓ Configurada' : 'Não configurada'}
-        </span>
-      </button>
+    <div className="relative"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
 
-      {aberta && (
-        <div className="mt-2 bg-gray-900 border border-white/10 rounded-2xl p-4 space-y-3">
-          <p className="text-xs text-gray-500">Cole sua chave da API Anthropic para que a IA gere perguntas personalizadas nos jogos.</p>
-          <input
-            type="password"
-            value={chave}
-            onChange={e => setChave(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && salvar()}
-            placeholder="sk-ant-..."
-            className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-500 placeholder-gray-700"
-          />
-          <div className="flex gap-2">
-            <button onClick={salvar} disabled={!chave.startsWith('sk-ant')}
-              className="flex-1 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-30 text-white text-sm font-bold rounded-xl transition-colors">
-              Salvar
-            </button>
-            {status === 'salva' && (
-              <button onClick={remover}
-                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-bold rounded-xl border border-red-500/20 transition-colors">
-                Remover
-              </button>
-            )}
+      {isLava && hovered && <FogoEfeito />}
+
+      <button onClick={onClick}
+        className="w-full rounded-2xl border border-gray-100 shadow-sm text-left transition-all duration-300 overflow-hidden block"
+        style={{
+          boxShadow: isLava && hovered    ? '0 0 24px rgba(255,100,0,0.4)'
+                   : isDungeon && hovered ? '0 0 24px rgba(124,58,237,0.45)'
+                   : '',
+        }}>
+
+        <div className="relative group" style={{ height: 140, overflow: 'hidden' }}>
+          {jogo.banner ? (
+            <img src={jogo.banner} alt={jogo.nome}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-5xl"
+              style={{ background: jogo.bg }}>
+              {jogo.emoji}
+            </div>
+          )}
+
+          {/* Morcegos — dentro do overflow hidden */}
+          {isDungeon && hovered && <MorcegosEfeito />}
+
+          {/* Overlay + botão play */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all duration-300 flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100">
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-2xl"
+                style={{ boxShadow: '0 0 0 5px rgba(255,255,255,0.25)' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 5.14v14l11-7-11-7z" fill="#7c3aed" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <a href="https://console.anthropic.com" target="_blank" rel="noreferrer"
-            className="block text-center text-xs text-violet-400 hover:underline">
-            Obter chave em console.anthropic.com →
-          </a>
         </div>
-      )}
+      </button>
     </div>
   );
 }
+
 
 const JOGOS = [
   {
     id: 'chao-e-lava',
     nome: 'Chão é Lava',
-    desc: 'Suba, aprenda e sobreviva',
-    tag: 'ROGUELIKE',
+    desc: 'Suba, responda e sobreviva',
+    tag: 'Roguelike',
     disponivel: true,
     rota: '/jogos/chao-e-lava',
-    bg: 'from-orange-500 to-red-700',
-    brilho: '#ff330044',
+    cor: '#f97316',
+    bg: '#fff7ed',
     emoji: '🌋',
-    estrelas: 4,
+    banner: '/banners/chao-e-lava.jpg',
   },
   {
     id: 'dungeon-quiz',
@@ -94,147 +190,73 @@ const JOGOS = [
     tag: 'RPG',
     disponivel: true,
     rota: '/jogos/dungeon-quiz',
-    bg: 'from-blue-600 to-purple-800',
-    brilho: '#6600ff22',
+    cor: '#7c3aed',
+    bg: '#f5f3ff',
     emoji: '🗡️',
-    estrelas: 4,
+    banner: '/banners/Dungeon.jpg',
   },
   {
     id: 'space-run',
     nome: 'Space Run',
     desc: 'Nave em modo endless runner',
-    tag: 'ENDLESS',
+    tag: 'Endless',
     disponivel: false,
-    bg: 'from-cyan-600 to-blue-900',
-    brilho: '#00ccff22',
+    cor: '#0ea5e9',
+    bg: '#f0f9ff',
     emoji: '🚀',
-    estrelas: 0,
   },
   {
     id: 'word-blast',
     nome: 'Word Blast',
     desc: 'Forme palavras antes do tempo',
-    tag: 'PUZZLE',
+    tag: 'Puzzle',
     disponivel: false,
-    bg: 'from-green-500 to-teal-800',
-    brilho: '#00ff8822',
+    cor: '#22c55e',
+    bg: '#f0fdf4',
     emoji: '💥',
-    estrelas: 0,
   },
 ];
-
-function Estrelas({ n }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1,2,3,4,5].map(i => (
-        <span key={i} className={`text-xs ${i <= n ? 'text-amber-400' : 'text-white/20'}`}>★</span>
-      ))}
-    </div>
-  );
-}
 
 export default function Jogos() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
+  const disponiveis = JOGOS.filter(j => j.disponivel);
+  const emBreve = JOGOS.filter(j => !j.disponivel);
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-4">
-        <p className="text-gray-500 text-sm">Olá, {usuario?.nome?.split(' ')[0]} 👋</p>
-        <h1 className="text-2xl font-black text-white mt-0.5">Escolha um jogo</h1>
-        <p className="text-gray-600 text-xs mt-1">Aprenda jogando — cada boss tem perguntas sobre o seu tema</p>
-      </div>
-
-      {/* Destaque — jogo principal */}
-      <div className="px-4 mb-4">
-        <div
-          onClick={() => navigate('/jogos/chao-e-lava')}
-          className="relative rounded-3xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-          style={{ background: 'linear-gradient(135deg, #ff5500, #cc0000)' }}
-        >
-          {/* Fundo decorativo */}
-          <div className="absolute inset-0 opacity-20">
-            {[...Array(20)].map((_, i) => (
-              <div key={i} className="absolute rounded-full bg-white"
-                style={{
-                  width: 4 + (i % 3) * 4,
-                  height: 4 + (i % 3) * 4,
-                  top: `${(i * 37) % 100}%`,
-                  left: `${(i * 53) % 100}%`,
-                  opacity: 0.3 + (i % 4) * 0.1,
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="relative p-5 flex items-center gap-4">
-            <div className="text-7xl drop-shadow-lg">🌋</div>
-            <div className="flex-1 text-white">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">ROGUELIKE</span>
-                <span className="bg-amber-400/30 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full">⚡ DISPONÍVEL</span>
-              </div>
-              <h2 className="text-2xl font-black leading-tight">Chão é Lava</h2>
-              <p className="text-white/70 text-sm mt-0.5">Suba. Aprenda. Responda. Sobreviva.</p>
-              <Estrelas n={4} />
-            </div>
-          </div>
-          <div className="px-5 pb-4">
-            <div className="bg-white text-orange-600 font-black text-sm py-2.5 rounded-2xl text-center">
-              🎮 JOGAR AGORA
-            </div>
-          </div>
+    <div className="max-w-2xl mx-auto px-5 pt-6 pb-8">
+      <div className="flex items-center gap-3 mb-6 mt-1">
+        <div className="flex-1 h-px bg-gray-200" />
+        <div className="bg-violet-600 px-5 py-2 rounded-full">
+          <h1 className="text-2xl text-white"
+            style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.06em' }}>
+            Escolha um jogo
+          </h1>
         </div>
+        <div className="flex-1 h-px bg-gray-200" />
       </div>
 
-      {/* Grid — Dungeon Quiz disponível + em breve */}
-      <div className="px-4">
-        {JOGOS.filter(j => j.disponivel && j.id !== 'chao-e-lava').map(jogo => (
-          <div key={jogo.id} onClick={() => navigate(jogo.rota)}
-            className="rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform mb-3">
-            <div className={`bg-gradient-to-br ${jogo.bg} p-5 flex items-center gap-4`}>
-              <div className="text-5xl">{jogo.emoji}</div>
-              <div className="flex-1 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-black/30 text-white/80 text-xs font-bold px-2 py-0.5 rounded-full">{jogo.tag}</span>
-                  <span className="bg-blue-400/30 text-blue-200 text-xs font-bold px-2 py-0.5 rounded-full">⚡ DISPONÍVEL</span>
-                </div>
-                <h3 className="text-xl font-black">{jogo.nome}</h3>
-                <p className="text-white/70 text-sm">{jogo.desc}</p>
-                <Estrelas n={jogo.estrelas} />
-              </div>
-              <span className="text-white/60 text-2xl">›</span>
+      <div className="space-y-4">
+        {disponiveis.map(jogo => (
+          <CardJogo key={jogo.id} jogo={jogo} onClick={() => navigate(`/lobby/${jogo.id}`)} />
+        ))}
+      </div>
+
+      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-8 mb-3">Em breve</p>
+      <div className="grid grid-cols-2 gap-3">
+        {emBreve.map(jogo => (
+          <div key={jogo.id} className="bg-white rounded-2xl p-4 border border-gray-100 opacity-60">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl mb-3"
+              style={{ background: jogo.bg }}>
+              {jogo.emoji}
             </div>
+            <p className="text-gray-900 font-black text-sm">{jogo.nome}</p>
+            <p className="text-gray-400 text-xs mt-0.5">{jogo.desc}</p>
+            <p className="text-gray-300 text-xs font-bold mt-3">Em breve</p>
           </div>
         ))}
-
-        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3 mt-1">Em breve</p>
-        <div className="grid grid-cols-2 gap-3">
-          {JOGOS.filter(j => !j.disponivel).map(jogo => (
-            <div key={jogo.id}
-              className="relative rounded-2xl overflow-hidden opacity-60"
-            >
-              <div className={`bg-gradient-to-br ${jogo.bg} p-4`}>
-                <div className="text-4xl mb-2">{jogo.emoji}</div>
-                <span className="bg-black/30 text-white/70 text-xs font-bold px-2 py-0.5 rounded-full">
-                  {jogo.tag}
-                </span>
-                <h3 className="text-white font-black text-base mt-2 leading-tight">{jogo.nome}</h3>
-                <p className="text-white/60 text-xs mt-0.5">{jogo.desc}</p>
-                <div className="mt-3 bg-black/30 rounded-xl py-1.5 text-center">
-                  <span className="text-white/50 text-xs font-bold">EM BREVE</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className="text-center text-gray-700 text-xs mt-4 mb-2">Mais jogos chegando em breve 👾</p>
       </div>
 
-      {/* Config API */}
-      <ConfigAPI />
     </div>
   );
 }

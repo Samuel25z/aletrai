@@ -241,6 +241,13 @@ export default function Game({ tema, materia, modoIA, onSair }) {
     <div className={`flex flex-col min-h-screen bg-gray-950 ${shake ? 'animate-bounce' : ''}`}>
       {/* Boss arena */}
       <div className={`bg-gradient-to-b ${boss.cor} pt-safe pb-4 px-5`}>
+        {/* Botão sair */}
+        <button
+          onClick={() => onSair({ xpGanho: Math.max(10, Math.floor(xpTotal / 2)) })}
+          className="absolute top-3 left-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 hover:bg-black/50 text-white text-xs font-bold transition-all border border-white/20">
+          ← Sair
+        </button>
+
         {/* Boss info */}
         <div className="flex items-center justify-between mb-3 pt-4">
           <div>

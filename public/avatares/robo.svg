@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#1e293b"/>
+  <!-- Body -->
+  <rect x="30" y="65" width="40" height="25" rx="6" fill="#334155"/>
+  <!-- Body details -->
+  <rect x="38" y="72" width="8" height="5" rx="1" fill="#0ea5e9"/>
+  <rect x="54" y="72" width="8" height="5" rx="1" fill="#22c55e"/>
+  <circle cx="50" cy="82" r="4" fill="#475569"/>
+  <circle cx="50" cy="82" r="2" fill="#0ea5e9"/>
+  <!-- Neck -->
+  <rect x="44" y="60" width="12" height="8" rx="2" fill="#475569"/>
+  <!-- Head -->
+  <rect x="28" y="28" width="44" height="36" rx="8" fill="#334155"/>
+  <!-- Eye screens -->
+  <rect x="33" y="36" width="14" height="10" rx="3" fill="#0f172a"/>
+  <rect x="53" y="36" width="14" height="10" rx="3" fill="#0f172a"/>
+  <!-- Eye glow -->
+  <rect x="35" y="38" width="10" height="6" rx="2" fill="#0ea5e9"/>
+  <rect x="55" y="38" width="10" height="6" rx="2" fill="#0ea5e9"/>
+  <!-- Eye shine -->
+  <circle cx="39" cy="40" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="59" cy="40" r="1.5" fill="white" opacity="0.8"/>
+  <!-- Mouth/speaker -->
+  <rect x="37" y="52" width="26" height="5" rx="2.5" fill="#1e293b"/>
+  <rect x="39" y="53.5" width="4" height="2" rx="1" fill="#0ea5e9"/>
+  <rect x="45" y="53.5" width="4" height="2" rx="1" fill="#0ea5e9"/>
+  <rect x="51" y="53.5" width="4" height="2" rx="1" fill="#0ea5e9"/>
+  <rect x="57" y="53.5" width="4" height="2" rx="1" fill="#0ea5e9"/>
+  <!-- Antenna -->
+  <rect x="48" y="18" width="4" height="12" rx="2" fill="#475569"/>
+  <circle cx="50" cy="16" r="4" fill="#0ea5e9"/>
+  <circle cx="50" cy="16" r="2" fill="#bae6fd"/>
+  <!-- Side bolts -->
+  <circle cx="28" cy="40" r="3" fill="#475569"/>
+  <circle cx="72" cy="40" r="3" fill="#475569"/>
+</svg>
