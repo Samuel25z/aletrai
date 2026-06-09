@@ -119,6 +119,14 @@ export default function Login() {
               Cadastre-se grátis
             </Link>
           </p>
+
+          <a href="/landing.html"
+            className="flex items-center justify-center gap-2 mt-4 w-full py-3 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.3)'; e.currentTarget.style.color = '#c084fc'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#9ca3af'; }}>
+            ✦ Saiba mais sobre o AletrAI
+          </a>
         </div>
       </div>
     </div>
