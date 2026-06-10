@@ -360,7 +360,8 @@ function gerarAndares() {
     const isBoss  = f % BOSS_EVERY === 0;
     const seed    = f * 137;
 
-    const plats = [{ x: 0, y: groundY, w: GW, h: 18, tipo: 'chao' }];
+    const plats  = [{ x: 0, y: groundY, w: GW, h: 18, tipo: 'chao' }];
+    const moedas = [];
 
     if (!isBoss) {
       // Escolhe um padrão de subida diferente a cada andar (cicla entre todos)
@@ -371,16 +372,30 @@ function gerarAndares() {
         const xJitter = Math.floor((seededRnd(seed, i + 10) - 0.5) * 14);        // ±7px
         const x  = Math.max(6, Math.min(GW - w - 6, Math.floor(xf * (GW - w)) + xJitter));
         const py = groundY - alt - Math.floor(seededRnd(seed, i + 20) * 5);
-        // Cristal decorativo em algumas plataformas
-        const temDeco = seededRnd(seed, i + 30) > 0.6;
-        const deco = temDeco ? (seededRnd(seed, i + 31) > 0.5 ? 'cristal' : 'cristal2') : null;
-        plats.push({ x, y: py, w, h: 12, tipo: 'mid', deco });
+        plats.push({ x, y: py, w, h: 12, tipo: 'mid' });
+        // Moeda no topo da maioria das plataformas
+        if (seededRnd(seed, i + 30) > 0.25) {
+          moedas.push({
+            id: f * 100 + i, x: x + Math.floor(w / 2) - 4, y: py - 14,
+            w: 8, h: 10, fase: seededRnd(seed, i + 40) * 6.28, coletada: false,
+          });
+        }
+      }
+      // Moeda extra "no ar" (recompensa de pulo)
+      if (seededRnd(seed, 77) > 0.5) {
+        moedas.push({
+          id: f * 100 + 50, x: 20 + Math.floor(seededRnd(seed, 78) * (GW - 60)),
+          y: groundY - 36, w: 8, h: 10, fase: seededRnd(seed, 79) * 6.28, coletada: false,
+        });
       }
     } else {
       // Boss: escada fixa e visível
-      plats.push({ x: 15,  y: groundY - 60,  w: 115, h: 12, tipo: 'mid', deco: 'cristal' });
+      plats.push({ x: 15,  y: groundY - 60,  w: 115, h: 12, tipo: 'mid' });
       plats.push({ x: 145, y: groundY - 120, w: 115, h: 12, tipo: 'mid' });
-      plats.push({ x: 270, y: groundY - 175, w: 115, h: 12, tipo: 'mid', deco: 'cristal2' });
+      plats.push({ x: 270, y: groundY - 175, w: 115, h: 12, tipo: 'mid' });
+      // Moedas de recompensa no andar do boss
+      moedas.push({ id: f * 100,     x: 65,  y: groundY - 74,  w: 8, h: 10, fase: 0, coletada: false });
+      moedas.push({ id: f * 100 + 2, x: 320, y: groundY - 189, w: 8, h: 10, fase: 2, coletada: false });
     }
 
     // Inimigos (só andares não-boss, a partir do andar 2)
@@ -448,32 +463,74 @@ function gerarAndares() {
       }
     }
 
-    andares.push({ num: f, plats, inimigos, isBoss, groundY });
+    andares.push({ num: f, plats, inimigos, isBoss, groundY, moedas });
   }
 
   return { andares, worldH };
 }
 
-// Cristal decorativo brilhante no topo de uma plataforma
-function drawCrystal(ctx, cx, topY, color, runTime) {
-  const pulse = 0.22 + 0.12 * Math.sin(runTime * 0.08 + cx);
+// Moeda dourada giratória (pixel art)
+function drawMoeda(ctx, x, y, runTime, fase) {
+  const t    = runTime * 0.12 + fase;
+  const by   = y + Math.sin(t) * 2;            // flutua
+  const spin = Math.abs(Math.cos(t));          // 0..1 largura (giro)
+  const cw   = Math.max(2, Math.round(8 * spin));
+  const cx   = Math.round(x + 4 - cw / 2);
   // glow pulsante
-  ctx.globalAlpha = pulse;
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.arc(cx, topY - 4, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 0.20 + 0.12 * Math.sin(t * 1.5);
+  ctx.fillStyle = '#ffd23a';
+  ctx.beginPath(); ctx.arc(x + 4, by + 5, 8, 0, Math.PI * 2); ctx.fill();
   ctx.globalAlpha = 1;
-  // gema (losango)
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(cx,     topY - 9);
-  ctx.lineTo(cx + 3, topY - 3);
-  ctx.lineTo(cx,     topY);
-  ctx.lineTo(cx - 3, topY - 3);
-  ctx.closePath();
-  ctx.fill();
-  // brilho
+  // borda
+  ctx.fillStyle = '#aa7400';
+  ctx.fillRect(cx, by, cw, 10);
+  // face dourada
+  ctx.fillStyle = '#ffd83a';
+  ctx.fillRect(cx + 1, by + 1, Math.max(1, cw - 2), 8);
+  // reflexo + símbolo "$" só quando de frente
+  if (spin > 0.45) {
+    ctx.fillStyle = '#fff4a8';
+    ctx.fillRect(x + 2, by + 1, 1, 8);
+    ctx.fillStyle = '#aa7400';
+    ctx.fillRect(x + 3, by + 2, 3, 1);
+    ctx.fillRect(x + 4, by + 2, 1, 6);
+    ctx.fillRect(x + 3, by + 7, 3, 1);
+  }
+}
+
+// Tiro de energia da pistola
+function drawTiro(ctx, x, y, dir) {
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#ffe680';
+  ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffcc33';
+  ctx.fillRect(x - 6 * dir, y - 1, 5, 2);     // rastro
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(cx - 1, topY - 6, 1, 2);
+  ctx.fillRect(x - 2, y - 1, 4, 2);           // núcleo
+}
+
+// Efeito visual do raio (espada-raio) — clarão + relâmpagos
+function drawRaioFX(ctx, gs) {
+  const a = gs.raioFlash / 16;
+  ctx.globalAlpha = 0.30 * a;
+  ctx.fillStyle = '#bfefff';
+  ctx.fillRect(0, 0, GW, GH);
+  ctx.globalAlpha = Math.min(1, 0.6 + a);
+  ctx.strokeStyle = '#e8ffff';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
+    let bx = (i * 70 + ((gs.runTime * 13 + i * 31) % 60));
+    let yy = 36;
+    ctx.beginPath(); ctx.moveTo(bx, yy);
+    while (yy < GH) {
+      yy += 26 + ((i * 17 + yy) % 18);
+      bx += (((i * 53 + yy) % 40) - 20);
+      ctx.lineTo(bx, yy);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 }
 
 // ─── Renderer: fundo + plataformas ───────────────────────────────────────────
@@ -554,11 +611,6 @@ function drawWorld(ctx, gs) {
         ctx.fillRect(plat.x, sy, plat.w, 3);
         ctx.fillStyle = '#c8b6ff';
         ctx.fillRect(plat.x, sy, plat.w, 1);
-        // decoração: cristal brilhante
-        if (plat.deco) {
-          const cx = plat.x + Math.floor(plat.w * 0.5);
-          drawCrystal(ctx, cx, sy, plat.deco === 'cristal' ? '#44e0ff' : '#ff5ad0', runTime);
-        }
       }
     }
   }
@@ -607,7 +659,7 @@ function drawLava(ctx, lavaY, camY, runTime) {
 }
 
 // ─── Renderer: HUD ───────────────────────────────────────────────────────────
-function drawHUD(ctx, vidas, andar, lavaSpeed) {
+function drawHUD(ctx, vidas, andar, lavaSpeed, moedas = 0, temRaio = false, raioCd = 0) {
   ctx.fillStyle = '#00000099';
   ctx.fillRect(0, 0, GW, 34);
 
@@ -620,21 +672,39 @@ function drawHUD(ctx, vidas, andar, lavaSpeed) {
   // Andar
   const isBoss = andar % BOSS_EVERY === 0;
   ctx.fillStyle = isBoss ? '#ff4466' : '#ffffff';
-  ctx.font = 'bold 12px monospace';
+  ctx.font = 'bold 11px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText(isBoss ? `⚔ BOSS ${andar}` : `Andar ${andar}`, GW / 2, 21);
+  ctx.fillText(isBoss ? `⚔ BOSS ${andar}` : `Andar ${andar}`, GW / 2, 14);
+
+  // Contador de moedas (sob o nome do andar)
+  ctx.fillStyle = '#ffd83a';
+  ctx.beginPath(); ctx.arc(GW / 2 - 16, 25, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#aa7400';
+  ctx.fillRect(GW / 2 - 17, 24, 2, 1);
+  ctx.fillStyle = '#ffe87a';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText(`${moedas}`, GW / 2 + 4, 28);
   ctx.textAlign = 'left';
+
+  // Indicador da espada-raio (recarga)
+  if (temRaio) {
+    const pronto = raioCd === 0;
+    ctx.fillStyle = pronto ? '#66e0ff' : '#335566';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(pronto ? '⚡PRONTO' : `⚡${Math.ceil(raioCd / 60)}s`, 8, 30);
+  }
 
   // Barra lava
   const pct = Math.min(1, (lavaSpeed - LAVA_INIT_SPD) / (LAVA_INIT_SPD * 15));
   ctx.fillStyle = '#333';
-  ctx.fillRect(GW - 52, 11, 42, 7);
+  ctx.fillRect(GW - 52, 9, 42, 6);
   ctx.fillStyle = pct < 0.5 ? '#ff6633' : '#ff2200';
-  ctx.fillRect(GW - 52, 11, Math.floor(42 * pct), 7);
+  ctx.fillRect(GW - 52, 9, Math.floor(42 * pct), 6);
   ctx.fillStyle = '#aaa';
   ctx.font = '8px monospace';
   ctx.textAlign = 'right';
-  ctx.fillText('LAVA', GW - 4, 22);
+  ctx.fillText('LAVA', GW - 4, 24);
   ctx.textAlign = 'left';
 }
 
@@ -675,16 +745,18 @@ async function gerarPergsBoss(tema, materia, modoIA) {
   return [...base].sort(() => Math.random() - 0.5).slice(0, 3);
 }
 
-export default function Game({ tema, materia, modoIA = true, onSair }) {
+export default function Game({ tema, materia, modoIA = true, onSair, pistola = false, raio = false, puloDuplo = false }) {
   const canvasRef = useRef(null);
   const gsRef     = useRef(null);
   const keysRef    = useRef({});
-  const touchRef   = useRef({ left: false, right: false, jump: false, attack: false });
+  const touchRef   = useRef({ left: false, right: false, jump: false, attack: false, pistol: false, raio: false });
   const rafRef     = useRef(null);
   const jumpedRef  = useRef(false);
   const attackedRef = useRef(false); // evita spam de ataque
   const attackFrameRef = useRef(0); // 0=sem ataque, 1-12=animando
   const attackCoolRef  = useRef(0); // cooldown entre ataques
+  const pistolRef      = useRef(false); // rising-edge do tiro
+  const raioRef        = useRef(false); // rising-edge do raio
 
   const [overlay, setOverlay]            = useState(null); // null | 'boss' | 'bossLoading' | 'dead'
   const [bossPerguntas, setBossPerguntas]= useState([]);   // 3 perguntas do boss atual
@@ -710,9 +782,11 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
         onGround: true,
         facing: 1,
         invincible: 0,
+        jumpsLeft: puloDuplo ? 2 : 1,
       },
       andares, worldH,
-      bullets: [],
+      bullets: [],          // balas dos magos (inimigas)
+      playerBullets: [],    // tiros da pistola (do player)
       lavaY:     worldH + LAVA_START_OFF,
       lavaSpeed: LAVA_INIT_SPD,
       camY:      worldH - GH,         // mostra exatamente o fundo do mundo
@@ -720,8 +794,12 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
       bossVisitados: new Set(),
       bossCount: 0,  // bosses derrotados — controla aceleração geral
       runTime: 0,
+      moedasRun: 0,        // moedas coletadas nesta partida
+      pistolCooldown: 0,
+      raioCooldown: 0,     // recarga da espada-raio (8s = 480 frames)
+      raioFlash: 0,        // frames de efeito visual do raio
     };
-  }, []);
+  }, [puloDuplo]);
 
   // ─── Loop ────────────────────────────────────────────────────────────────
   const gameLoop = useCallback(() => {
@@ -742,7 +820,7 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
       drawWorld(ctx2, gs);
       drawLava(ctx2, gs.lavaY, gs.camY, gs.runTime);
       drawPlayer(ctx2, gs.player.x, gs.player.y - gs.camY, gs.player.facing < 0, 0, 0);
-      drawHUD(ctx2, vidas, gs.currentFloor, gs.lavaSpeed);
+      drawHUD(ctx2, vidas, gs.currentFloor, gs.lavaSpeed, gs.moedasRun, raio, gs.raioCooldown);
       rafRef.current = requestAnimationFrame(gameLoop);
       return;
     }
@@ -766,10 +844,11 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
     else if (goR) { p.vx = Math.min(p.vx + 1.5,  MOVE_SPD); p.facing =  1; }
     else          { p.vx *= 0.7; }
 
-    // Pulo (1 clique por pressão)
-    if (doJ && p.onGround && !jumpedRef.current) {
+    // Pulo (com suporte a pulo duplo) — 1 salto por pressão
+    if (doJ && !jumpedRef.current && p.jumpsLeft > 0) {
       p.vy = JUMP_VEL;
       p.onGround = false;
+      p.jumpsLeft--;
       jumpedRef.current = true;
     }
     if (!doJ) jumpedRef.current = false;
@@ -786,7 +865,7 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
     if (p.x > GW)       p.x = -p.w;
 
     // ─── Ataque com espada ───────────────────────────────────────────────
-    const doAtk = keys['z'] || keys['Z'] || keys['x'] || keys['X'] || keys['k'] || keys['K'] || touchRef.current.attack;
+    const doAtk = keys['z'] || keys['Z'] || keys['k'] || keys['K'] || touchRef.current.attack;
     if (attackCoolRef.current > 0) attackCoolRef.current--;
 
     if (doAtk && !attackedRef.current && attackCoolRef.current === 0) {
@@ -825,6 +904,32 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
 
     // Colisão
     resolveCollisions(p, gs.andares);
+    // Recarrega os pulos ao tocar o chão
+    if (p.onGround) p.jumpsLeft = puloDuplo ? 2 : 1;
+
+    // ─── Pistola (item permanente) ───────────────────────────────────────
+    if (gs.pistolCooldown > 0) gs.pistolCooldown--;
+    const doShoot = pistola && (keys['x'] || keys['X'] || touchRef.current.pistol);
+    if (doShoot && !pistolRef.current && gs.pistolCooldown === 0) {
+      gs.playerBullets.push({ x: p.x + p.w / 2, y: p.y + p.h / 2, vx: p.facing * 5 });
+      gs.pistolCooldown = 16;
+      pistolRef.current = true;
+    }
+    if (!doShoot) pistolRef.current = false;
+
+    // ─── Espada-raio (item permanente, recarga 8s) ───────────────────────
+    if (gs.raioCooldown > 0) gs.raioCooldown--;
+    if (gs.raioFlash > 0) gs.raioFlash--;
+    const doRaio = raio && (keys['c'] || keys['C'] || touchRef.current.raio);
+    if (doRaio && !raioRef.current && gs.raioCooldown === 0) {
+      // Elimina todos os inimigos vivos do andar atual
+      const alvo = gs.andares.find(a => a.num === gs.currentFloor);
+      if (alvo) for (const en of alvo.inimigos) en.vivo = false;
+      gs.raioFlash    = 16;
+      gs.raioCooldown = 480; // 8 segundos a 60fps
+      raioRef.current = true;
+    }
+    if (!doRaio) raioRef.current = false;
 
     // Segurança: caiu fora do mundo → morte
     if (p.y > gs.worldH + 150) {
@@ -929,6 +1034,35 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
       }
     }
 
+    // Tiros da pistola (player) — eliminam inimigos
+    gs.playerBullets = gs.playerBullets.filter(b => b.x > -20 && b.x < GW + 20);
+    for (const b of gs.playerBullets) {
+      b.x += b.vx;
+      for (const andar of visibles) {
+        for (const en of andar.inimigos) {
+          if (!en.vivo) continue;
+          if (b.x > en.x && b.x < en.x + en.w && b.y > en.y && b.y < en.y + en.h) {
+            en.vivo = false; b.x = -999;
+          }
+        }
+      }
+    }
+    gs.playerBullets = gs.playerBullets.filter(b => b.x > -900);
+
+    // Coleta de moedas
+    for (const andar of visibles) {
+      if (!andar.moedas) continue;
+      for (const mo of andar.moedas) {
+        if (mo.coletada) continue;
+        if (p.x < mo.x + mo.w && p.x + p.w > mo.x && p.y < mo.y + mo.h && p.y + p.h > mo.y) {
+          mo.coletada = true;
+          gs.moedasRun++;
+          const atual = parseInt(localStorage.getItem('aletrai_chaolava_moedas') || '0', 10);
+          localStorage.setItem('aletrai_chaolava_moedas', String(atual + 1));
+        }
+      }
+    }
+
     // Lava
     gs.lavaY    -= gs.lavaSpeed;
     gs.lavaSpeed = Math.min(gs.lavaSpeed + LAVA_ACCEL, LAVA_INIT_SPD * 8);
@@ -942,6 +1076,17 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
     // ─── Render ──────────────────────────────────────────────────────────
     drawWorld(ctx, gs);
     drawLava(ctx, gs.lavaY, gs.camY, gs.runTime);
+
+    // Moedas
+    for (const andar of visibles) {
+      if (!andar.moedas) continue;
+      for (const mo of andar.moedas) {
+        if (mo.coletada) continue;
+        const my = mo.y - gs.camY;
+        if (my < -20 || my > GH + 20) continue;
+        drawMoeda(ctx, mo.x, my, gs.runTime, mo.fase);
+      }
+    }
 
     // Inimigos
     for (const andar of visibles) {
@@ -960,7 +1105,7 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
       }
     }
 
-    // Balas
+    // Balas (magos)
     for (const b of gs.bullets) {
       const by = b.y - gs.camY;
       ctx.fillStyle = '#ff88ff';
@@ -969,15 +1114,23 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
       ctx.fillRect(b.x - 2, by - 2, 4, 4);
     }
 
+    // Tiros da pistola (player)
+    for (const b of gs.playerBullets) {
+      drawTiro(ctx, b.x, b.y - gs.camY, b.vx >= 0 ? 1 : -1);
+    }
+
     // Player
     const moving = Math.abs(p.vx) > 0.5 && p.onGround;
     const frame  = moving ? Math.floor(gs.runTime / 7) % 2 : 0;
     drawPlayer(ctx, p.x, p.y - gs.camY, p.facing < 0, frame, p.invincible, attackFrameRef.current);
 
-    drawHUD(ctx, vidas, gs.currentFloor, gs.lavaSpeed);
+    // Efeito visual da espada-raio
+    if (gs.raioFlash > 0) drawRaioFX(ctx, gs);
+
+    drawHUD(ctx, vidas, gs.currentFloor, gs.lavaSpeed, gs.moedasRun, raio, gs.raioCooldown);
 
     rafRef.current = requestAnimationFrame(gameLoop);
-  }, [overlay, vidas, tema, materia]);
+  }, [overlay, vidas, tema, materia, pistola, raio, puloDuplo]);
 
   function dano(qtd) {
     const gs = gsRef.current;
@@ -1027,7 +1180,7 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
   useEffect(() => { initGS(); }, [initGS]);
 
   useEffect(() => {
-    const dn = e => { keysRef.current[e.key] = true; if ([' ','ArrowUp','ArrowDown','z','Z','x','X','k','K'].includes(e.key)) e.preventDefault(); };
+    const dn = e => { keysRef.current[e.key] = true; if ([' ','ArrowUp','ArrowDown','z','Z','x','X','c','C','k','K'].includes(e.key)) e.preventDefault(); };
     const up = e => { keysRef.current[e.key] = false; };
     window.addEventListener('keydown', dn);
     window.addEventListener('keyup', up);
@@ -1150,10 +1303,34 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
           onPointerDown={() => { touchRef.current.attack = true; attackedRef.current = false; }}
           onPointerUp={() => touchRef.current.attack = false}
           onPointerLeave={() => touchRef.current.attack = false}
-          className="w-16 h-16 rounded-full flex items-center justify-center text-2xl text-white font-black"
+          className="w-14 h-14 rounded-full flex items-center justify-center text-xl text-white font-black"
           style={{ background:'linear-gradient(135deg,#aaaa00,#666600)', boxShadow:'0 4px 20px #aaaa0066' }}>
           ⚔️
         </button>
+
+        {/* Pistola (se adquirida) */}
+        {pistola && (
+          <button
+            onPointerDown={() => { touchRef.current.pistol = true; pistolRef.current = false; }}
+            onPointerUp={() => touchRef.current.pistol = false}
+            onPointerLeave={() => touchRef.current.pistol = false}
+            className="w-12 h-12 rounded-full flex items-center justify-center text-lg text-white font-black"
+            style={{ background:'linear-gradient(135deg,#4a90d9,#1f5fa8)', boxShadow:'0 4px 16px #2a72c066' }}>
+            🔫
+          </button>
+        )}
+
+        {/* Espada-raio (se adquirida) */}
+        {raio && (
+          <button
+            onPointerDown={() => { touchRef.current.raio = true; raioRef.current = false; }}
+            onPointerUp={() => touchRef.current.raio = false}
+            onPointerLeave={() => touchRef.current.raio = false}
+            className="w-12 h-12 rounded-full flex items-center justify-center text-lg text-white font-black"
+            style={{ background:'linear-gradient(135deg,#22c0e8,#1577a8)', boxShadow:'0 4px 16px #22c0e866' }}>
+            ⚡
+          </button>
+        )}
 
         {/* Direita */}
         <button
