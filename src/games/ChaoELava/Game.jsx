@@ -334,6 +334,23 @@ function seededRnd(seed, idx) {
   return Math.abs(Math.sin(seed * 9301 + idx * 49297 + 233)) % 1;
 }
 
+// Padrões de subida — cada item: [fração X, altura acima do chão, largura base]
+// Todos os saltos verticais ≤ ~62px (pulo máx ≈ 90px) → sempre alcançáveis.
+const LAYOUTS = [
+  // 0 — Zigue-zague
+  [[0.05, 56, 120], [0.55, 112, 120], [0.05, 168, 118]],
+  // 1 — Escada para a direita
+  [[0.04, 56, 110], [0.36, 112, 110], [0.62, 168, 118]],
+  // 2 — Escada para a esquerda
+  [[0.62, 56, 118], [0.34, 112, 110], [0.04, 168, 110]],
+  // 3 — Torre central
+  [[0.30, 56, 118], [0.44, 112, 104], [0.27, 168, 118]],
+  // 4 — Subida longa (4 plataformas, saltos curtos)
+  [[0.05, 48, 100], [0.56, 90, 100], [0.06, 132, 100], [0.52, 176, 108]],
+  // 5 — Alternado largo
+  [[0.60, 58, 110], [0.05, 114, 112], [0.60, 170, 110]],
+];
+
 function gerarAndares() {
   const worldH = MAX_FLOORS * FLOOR_H;
   const andares = [];
@@ -345,21 +362,25 @@ function gerarAndares() {
 
     const plats = [{ x: 0, y: groundY, w: GW, h: 18, tipo: 'chao' }];
 
-    // Escada de 3 degraus: 60 / 120 / 175px acima do chão
-    // Cada salto ≤65px (max pulo ≈ 87px) → sempre alcançável
-    const DEGRAUS = [60, 120, 175];
     if (!isBoss) {
-      for (let i = 0; i < 3; i++) {
-        const pw = 100 + Math.floor(seededRnd(seed, i) * 50); // 100-150px
-        const px = Math.floor(seededRnd(seed, i + 10) * (GW - pw - 20)) + 10;
-        const py = groundY - DEGRAUS[i] - Math.floor(seededRnd(seed, i + 20) * 6);
-        plats.push({ x: px, y: py, w: pw, h: 12, tipo: 'mid' });
+      // Escolhe um padrão de subida diferente a cada andar (cicla entre todos)
+      const layout = LAYOUTS[(f - 1) % LAYOUTS.length];
+      for (let i = 0; i < layout.length; i++) {
+        const [xf, alt, baseW] = layout[i];
+        const w  = baseW + Math.floor((seededRnd(seed, i) - 0.5) * 16);          // ±8px
+        const xJitter = Math.floor((seededRnd(seed, i + 10) - 0.5) * 14);        // ±7px
+        const x  = Math.max(6, Math.min(GW - w - 6, Math.floor(xf * (GW - w)) + xJitter));
+        const py = groundY - alt - Math.floor(seededRnd(seed, i + 20) * 5);
+        // Cristal decorativo em algumas plataformas
+        const temDeco = seededRnd(seed, i + 30) > 0.6;
+        const deco = temDeco ? (seededRnd(seed, i + 31) > 0.5 ? 'cristal' : 'cristal2') : null;
+        plats.push({ x, y: py, w, h: 12, tipo: 'mid', deco });
       }
     } else {
       // Boss: escada fixa e visível
-      plats.push({ x: 15,  y: groundY - 60,  w: 115, h: 12, tipo: 'mid' });
+      plats.push({ x: 15,  y: groundY - 60,  w: 115, h: 12, tipo: 'mid', deco: 'cristal' });
       plats.push({ x: 145, y: groundY - 120, w: 115, h: 12, tipo: 'mid' });
-      plats.push({ x: 270, y: groundY - 175, w: 115, h: 12, tipo: 'mid' });
+      plats.push({ x: 270, y: groundY - 175, w: 115, h: 12, tipo: 'mid', deco: 'cristal2' });
     }
 
     // Inimigos (só andares não-boss, a partir do andar 2)
@@ -433,11 +454,37 @@ function gerarAndares() {
   return { andares, worldH };
 }
 
+// Cristal decorativo brilhante no topo de uma plataforma
+function drawCrystal(ctx, cx, topY, color, runTime) {
+  const pulse = 0.22 + 0.12 * Math.sin(runTime * 0.08 + cx);
+  // glow pulsante
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(cx, topY - 4, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  // gema (losango)
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx,     topY - 9);
+  ctx.lineTo(cx + 3, topY - 3);
+  ctx.lineTo(cx,     topY);
+  ctx.lineTo(cx - 3, topY - 3);
+  ctx.closePath();
+  ctx.fill();
+  // brilho
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(cx - 1, topY - 6, 1, 2);
+}
+
 // ─── Renderer: fundo + plataformas ───────────────────────────────────────────
 function drawWorld(ctx, gs) {
   const { camY, andares, worldH, runTime } = gs;
 
-  ctx.fillStyle = C.bg;
+  // Fundo com leve gradiente vertical (caverna)
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, GH);
+  bgGrad.addColorStop(0, '#0e0020');
+  bgGrad.addColorStop(1, '#160030');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, GW, GH);
 
   // Estrelas fixas
@@ -457,12 +504,25 @@ function drawWorld(ctx, gs) {
       if (sy > GH + 20 || sy + plat.h < -20) continue;
 
       if (plat.tipo === 'chao') {
-        ctx.fillStyle = C.platShad;
-        ctx.fillRect(0, sy + 5, GW, plat.h);
-        ctx.fillStyle = C.platBase;
+        // sombra inferior (profundidade)
+        ctx.fillStyle = '#0c001e';
+        ctx.fillRect(0, sy + plat.h, GW, 8);
+        // corpo com gradiente (rocha)
+        const g = ctx.createLinearGradient(0, sy, 0, sy + plat.h);
+        g.addColorStop(0, andar.isBoss ? '#5a1430' : '#3a2270');
+        g.addColorStop(1, andar.isBoss ? '#2a0a1a' : '#1c1040');
+        ctx.fillStyle = g;
         ctx.fillRect(0, sy, GW, plat.h);
-        ctx.fillStyle = andar.isBoss ? C.bossLine : C.platTop;
-        ctx.fillRect(0, sy, GW, 4);
+        // tijolos (seams verticais alternados + linha central)
+        ctx.fillStyle = 'rgba(0,0,0,0.22)';
+        const off = (andar.num % 2) * 11;
+        for (let bx = off; bx < GW; bx += 22) ctx.fillRect(bx, sy + 4, 1, plat.h - 4);
+        ctx.fillRect(0, sy + Math.floor(plat.h / 2), GW, 1);
+        // topo neon (borda brilhante)
+        ctx.fillStyle = andar.isBoss ? '#ff3a5a' : '#7a52d8';
+        ctx.fillRect(0, sy, GW, 3);
+        ctx.fillStyle = andar.isBoss ? '#ff8aa0' : '#b89cff';
+        ctx.fillRect(0, sy, GW, 1);
         // Label
         ctx.font = andar.isBoss ? 'bold 11px monospace' : '9px monospace';
         ctx.fillStyle = andar.isBoss ? '#ff6688' : '#9966ff';
@@ -470,12 +530,35 @@ function drawWorld(ctx, gs) {
         ctx.fillText(andar.isBoss ? `⚔ BOSS ${andar.num}` : `${andar.num}`, GW - 6, sy - 3);
         ctx.textAlign = 'left';
       } else {
-        ctx.fillStyle = C.platShad;
-        ctx.fillRect(plat.x + 3, sy + 4, plat.w, plat.h);
-        ctx.fillStyle = C.platBase;
+        // sombra projetada
+        ctx.fillStyle = 'rgba(0,0,0,0.30)';
+        ctx.fillRect(plat.x + 3, sy + 5, plat.w, plat.h);
+        // corpo com gradiente (bloco de pedra)
+        const g = ctx.createLinearGradient(0, sy, 0, sy + plat.h);
+        g.addColorStop(0, '#553597');
+        g.addColorStop(1, '#241247');
+        ctx.fillStyle = g;
         ctx.fillRect(plat.x, sy, plat.w, plat.h);
-        ctx.fillStyle = C.platTop;
-        ctx.fillRect(plat.x, sy, plat.w, 4);
+        // bevel lateral (relevo)
+        ctx.fillStyle = 'rgba(255,255,255,0.10)';
+        ctx.fillRect(plat.x, sy, 2, plat.h);
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.fillRect(plat.x + plat.w - 2, sy, 2, plat.h);
+        // seams de pedra
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        for (let sx2 = plat.x + 16; sx2 < plat.x + plat.w - 6; sx2 += 20) {
+          ctx.fillRect(sx2, sy + 3, 1, plat.h - 3);
+        }
+        // topo neon
+        ctx.fillStyle = '#8a6cff';
+        ctx.fillRect(plat.x, sy, plat.w, 3);
+        ctx.fillStyle = '#c8b6ff';
+        ctx.fillRect(plat.x, sy, plat.w, 1);
+        // decoração: cristal brilhante
+        if (plat.deco) {
+          const cx = plat.x + Math.floor(plat.w * 0.5);
+          drawCrystal(ctx, cx, sy, plat.deco === 'cristal' ? '#44e0ff' : '#ff5ad0', runTime);
+        }
       }
     }
   }
