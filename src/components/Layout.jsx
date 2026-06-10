@@ -42,6 +42,16 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
+        {/* Sobre o AletrAI */}
+        <div className="px-3 pb-2">
+          <a href="/landing.html"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:bg-violet-50 hover:text-violet-600 transition-all group">
+            <span className="text-lg">✦</span>
+            <span>Sobre o AletrAI</span>
+            <span className="ml-auto text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+          </a>
+        </div>
+
         {/* Usuário */}
         <div className="px-4 py-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl">
