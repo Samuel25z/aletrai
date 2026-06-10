@@ -83,41 +83,59 @@ function drawPlayer(ctx, x, y, flip, frame, invincible, attackFrame) {
   const origX = x; // guarda posição real antes do flip modificar x
   ctx.save();
   if (flip) { ctx.translate(x + 9 * S, 0); ctx.scale(-1, 1); x = 0; }
+  const px = (cx, cy, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + cx*S, y + cy*S, w*S, h*S); };
 
-  // Cabelo
-  ctx.fillStyle = '#3b1f0a';
-  ctx.fillRect(x + 2*S, y,       5*S, S);
-  ctx.fillRect(x + S,   y + S,   7*S, S);
-  // Rosto (pele)
-  ctx.fillStyle = '#f5c89a';
-  ctx.fillRect(x + S,   y + 2*S, 7*S, 5*S);
-  // Olhos
-  ctx.fillStyle = '#111';
-  ctx.fillRect(x + 2*S, y + 3*S, S, S);
-  ctx.fillRect(x + 5*S, y + 3*S, S, S);
-  // Boca
-  ctx.fillStyle = '#c05030';
-  ctx.fillRect(x + 3*S, y + 6*S, 3*S, S);
-  // Camisa laranja
-  ctx.fillStyle = '#ff6a30';
-  ctx.fillRect(x + S,   y + 7*S, 7*S, 5*S);
-  // Braços (pele)
-  ctx.fillStyle = '#f5c89a';
-  ctx.fillRect(x,       y + 7*S, S,   4*S);
-  ctx.fillRect(x + 8*S, y + 7*S, S,   4*S);
-  // Cinto
-  ctx.fillStyle = '#aa7700';
-  ctx.fillRect(x + S,   y + 12*S, 7*S, S);
-  // Calça
-  ctx.fillStyle = '#1e2e50';
-  const lA = frame === 1 ? 2*S : 0;
-  const lB = frame === 1 ? 0   : 2*S;
-  ctx.fillRect(x + S,   y + 13*S, 3*S, 4*S + lA); // perna esq
-  ctx.fillRect(x + 5*S, y + 13*S, 3*S, 4*S + lB); // perna dir
-  // Botas
-  ctx.fillStyle = '#3a1a04';
-  ctx.fillRect(x + S,   y + 13*S + 4*S + lA, 3*S, S + S);
-  ctx.fillRect(x + 5*S, y + 13*S + 4*S + lB, 3*S, S + S);
+  // ── Cabelo ──
+  px(2,0,5,1,'#2a1505');
+  px(1,1,7,1,'#43250c');
+  px(2,1,3,1,'#6b3f1a');          // brilho
+  px(1,2,1,1,'#2a1505');
+  px(7,2,1,1,'#2a1505');
+  // ── Rosto ──
+  px(1,2,7,5,'#f5c89a');
+  px(1,2,1,5,'#d9a070');          // sombra lateral
+  px(7,6,1,1,'#d9a070');
+  // sobrancelhas
+  px(2,3,2,1,'#43250c');
+  px(5,3,2,1,'#43250c');
+  // olhos
+  px(2,4,1,1,'#ffffff'); px(2,4,1,1,'#27406e');
+  px(5,4,1,1,'#ffffff');
+  ctx.fillStyle = '#27406e';
+  ctx.fillRect(x + 2*S, y + 4*S, S, S);
+  ctx.fillRect(x + 5*S, y + 4*S, S, S);
+  ctx.fillStyle = '#bcd4ff';      // brilho do olho
+  ctx.fillRect(x + 2*S, y + 4*S, S/2, S/2);
+  ctx.fillRect(x + 5*S, y + 4*S, S/2, S/2);
+  // nariz + boca
+  px(4,5,1,1,'#d9a070');
+  px(3,6,3,1,'#a8401e');
+  // ── Camisa ──
+  px(1,7,7,4,'#ff6a30');
+  px(1,7,7,1,'#ff9258');          // gola clara
+  px(2,9,2,1,'#cc4410');          // dobra sombra
+  px(5,9,2,1,'#cc4410');
+  px(4,7,1,4,'#cc4410');          // zíper central
+  // Braços
+  px(0,7,1,4,'#f5c89a');
+  px(8,7,1,4,'#f5c89a');
+  px(0,10,1,1,'#d9a070');
+  px(8,10,1,1,'#d9a070');
+  // ── Cinto ──
+  px(1,11,7,1,'#caa030');
+  px(4,11,1,1,'#7a5808');         // fivela
+  // ── Calça ──
+  const lA = frame === 1 ? 2 : 0;
+  const lB = frame === 1 ? 0 : 2;
+  px(1,12,3,4+lA,'#2a3a60');
+  px(5,12,3,4+lB,'#2a3a60');
+  px(1,12,1,4+lA,'#1a2540');      // sombra perna
+  px(5,12,1,4+lB,'#1a2540');
+  // ── Botas ──
+  px(1,16+lA,3,2,'#3a1a04');
+  px(5,16+lB,3,2,'#3a1a04');
+  px(1,17+lA,3,1,'#241000');      // sola
+  px(5,17+lB,3,1,'#241000');
 
   // Espada pequena no cinto (sempre visível, pisca durante ataque)
   if (!attackFrame || attackFrame === 0) {
@@ -139,44 +157,43 @@ function drawGoblin(ctx, x, y, flip, frame) {
   const S = 2;
   ctx.save();
   if (flip) { ctx.translate(x + 10*S, 0); ctx.scale(-1, 1); x = 0; }
+  const px = (cx, cy, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + cx*S, y + cy*S, w*S, h*S); };
 
-  // Orelhas pontudas
-  ctx.fillStyle = '#0f8820';
-  ctx.fillRect(x,        y + S,  2*S, 4*S);
-  ctx.fillRect(x + 8*S,  y + S,  2*S, 4*S);
-  // Cabeça
-  ctx.fillStyle = '#1ecc3a';
-  ctx.fillRect(x + S,    y,      8*S, 7*S);
-  // Olhos (amarelos grandes)
-  ctx.fillStyle = '#eecc00';
-  ctx.fillRect(x + 2*S,  y + S,  2*S, 2*S);
-  ctx.fillRect(x + 6*S,  y + S,  2*S, 2*S);
-  // Pupilas
-  ctx.fillStyle = '#111';
-  ctx.fillRect(x + 2*S + S/2, y + S + S/2, S, S);
-  ctx.fillRect(x + 6*S + S/2, y + S + S/2, S, S);
-  // Boca / dentes
-  ctx.fillStyle = '#cc1100';
-  ctx.fillRect(x + 2*S,  y + 5*S, 6*S, 2*S);
-  ctx.fillStyle = '#eee';
-  ctx.fillRect(x + 2*S,  y + 5*S, S,   S);
-  ctx.fillRect(x + 4*S,  y + 5*S, S,   S);
-  ctx.fillRect(x + 7*S,  y + 5*S, S,   S);
-  // Corpo (couro)
-  ctx.fillStyle = '#5a3010';
-  ctx.fillRect(x + S,    y + 7*S, 8*S, 5*S);
-  ctx.fillStyle = '#8a5020';
-  ctx.fillRect(x + 3*S,  y + 8*S, 4*S, 3*S); // peito claro
-  // Pernas
-  ctx.fillStyle = '#2a2a3a';
-  const lA = frame === 1 ? 2*S : 0;
-  const lB = frame === 1 ? 0   : 2*S;
-  ctx.fillRect(x + S,    y + 12*S, 3*S, 3*S + lA);
-  ctx.fillRect(x + 6*S,  y + 12*S, 3*S, 3*S + lB);
-  // Botas
-  ctx.fillStyle = '#1a1005';
-  ctx.fillRect(x + S,    y + 12*S + 3*S + lA, 3*S, S);
-  ctx.fillRect(x + 6*S,  y + 12*S + 3*S + lB, 3*S, S);
+  // ── Orelhas pontudas ──
+  px(0,1,2,2,'#168a26'); px(0,2,1,2,'#0d5e18');
+  px(8,1,2,2,'#168a26'); px(9,2,1,2,'#0d5e18');
+  // ── Cabeça ──
+  px(1,0,8,7,'#2bbf3f');
+  px(1,0,8,1,'#52e066');          // topo claro
+  px(1,1,1,6,'#0d5e18');          // sombra lateral
+  px(8,1,1,6,'#168a26');
+  // sobrancelhas (bravo)
+  px(2,2,2,1,'#0d5e18');
+  px(6,2,2,1,'#0d5e18');
+  // olhos amarelos
+  px(2,3,2,2,'#ffd500'); px(6,3,2,2,'#ffd500');
+  px(3,4,1,1,'#111100'); px(6,4,1,1,'#111100');   // pupilas
+  px(2,3,1,1,'#fff7aa'); px(6,3,1,1,'#fff7aa');    // brilho
+  // nariz
+  px(4,4,1,2,'#168a26');
+  // boca + dentes
+  px(2,5,6,2,'#7a0a0a');
+  px(2,5,1,1,'#f0f0e0'); px(4,5,1,1,'#f0f0e0'); px(7,5,1,1,'#f0f0e0');  // sup
+  px(3,6,1,1,'#f0f0e0'); px(6,6,1,1,'#f0f0e0');                          // inf
+  // ── Corpo (couro) ──
+  px(1,7,8,5,'#6a3a14');
+  px(1,7,8,1,'#9a6028');          // borda clara
+  px(3,8,4,3,'#9a6028');          // peito claro
+  px(1,7,1,5,'#42230a');          // sombra
+  px(4,9,1,2,'#42230a');          // cinto/correia
+  // ── Pernas ──
+  const lA = frame === 1 ? 2 : 0;
+  const lB = frame === 1 ? 0 : 2;
+  px(1,12,3,1+lA,'#2a2a3a');
+  px(6,12,3,1+lB,'#2a2a3a');
+  // botas
+  px(1,13+lA,3,1,'#120a02');
+  px(6,13+lB,3,1,'#120a02');
 
   ctx.restore();
 }
@@ -185,39 +202,43 @@ function drawSkeleton(ctx, x, y, flip, frame) {
   const S = 2;
   ctx.save();
   if (flip) { ctx.translate(x + 8*S, 0); ctx.scale(-1, 1); x = 0; }
+  const px = (cx, cy, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + cx*S, y + cy*S, w*S, h*S); };
 
-  const bone = '#d0cca0', boneLt = '#eeeac0', dark = '#1a1a2a';
-  // Crânio
-  ctx.fillStyle = boneLt;
-  ctx.fillRect(x + S,   y,      6*S, 5*S);
-  // Órbitas oculares
-  ctx.fillStyle = dark;
-  ctx.fillRect(x + S,   y + S,  2*S, 2*S);
-  ctx.fillRect(x + 5*S, y + S,  2*S, 2*S);
-  // Mandíbula / dentes
-  ctx.fillStyle = bone;
-  ctx.fillRect(x + S,   y + 5*S, 6*S, 2*S);
-  ctx.fillStyle = boneLt;
-  ctx.fillRect(x + 2*S, y + 5*S, S,   S);
-  ctx.fillRect(x + 4*S, y + 5*S, S,   S);
-  ctx.fillRect(x + 6*S, y + 5*S, S,   S);
-  // Pescoço
-  ctx.fillStyle = bone;
-  ctx.fillRect(x + 3*S, y + 7*S, 2*S, S);
-  // Caixa torácica
-  ctx.fillStyle = bone;
-  ctx.fillRect(x + S,   y + 8*S, 6*S, 4*S);
-  ctx.fillStyle = dark;
-  ctx.fillRect(x + 2*S, y + 9*S, S,   S);
-  ctx.fillRect(x + 5*S, y + 9*S, S,   S);
-  ctx.fillRect(x + 2*S, y + 11*S, S,  S);
-  ctx.fillRect(x + 5*S, y + 11*S, S,  S);
-  // Pernas
-  ctx.fillStyle = bone;
-  const lA = frame === 1 ? S : 0;
-  const lB = frame === 1 ? 0 : S;
-  ctx.fillRect(x + S,   y + 12*S, 2*S, 4*S + lA);
-  ctx.fillRect(x + 5*S, y + 12*S, 2*S, 4*S + lB);
+  const bone = '#d8d4ac', boneLt = '#f2eecc', boneSh = '#a8a47c', dark = '#0a0a16';
+
+  // ── Crânio ──
+  px(1,0,6,5,bone);
+  px(1,0,6,1,boneLt);
+  px(1,0,1,5,boneSh);
+  px(6,0,1,5,boneSh);
+  // órbitas
+  px(2,2,2,2,dark); px(4,2,2,2,dark);
+  px(2,2,1,1,'#3a3a55'); px(4,2,1,1,'#3a3a55');   // brilho leve
+  ctx.fillStyle = '#ff3030';                       // pontinho de vida nos olhos
+  ctx.fillRect(x + 2*S + S/2, y + 2*S + S/2, S/2, S/2);
+  ctx.fillRect(x + 4*S + S/2, y + 2*S + S/2, S/2, S/2);
+  // nariz
+  px(3,3,1,1,boneSh);
+  // mandíbula + dentes
+  px(1,5,6,1,bone);
+  px(2,5,1,1,boneSh); px(3,5,1,1,boneLt); px(4,5,1,1,boneSh); px(5,5,1,1,boneLt);
+  // pescoço
+  px(3,6,2,1,boneSh);
+  // ── Caixa torácica ──
+  px(1,7,6,4,bone);
+  px(1,7,6,1,boneLt);
+  px(3,7,2,4,boneSh);             // coluna sombreada
+  // costelas
+  px(2,8,1,1,dark); px(5,8,1,1,dark);
+  px(2,9,1,1,dark); px(5,9,1,1,dark);
+  px(2,10,1,1,dark); px(5,10,1,1,dark);
+  // ── Pernas ──
+  const lA = frame === 1 ? 1 : 0;
+  const lB = frame === 1 ? 0 : 1;
+  px(1,11,2,3+lA,bone);
+  px(5,11,2,3+lB,bone);
+  px(1,11,1,3+lA,boneSh);
+  px(5,11,1,3+lB,boneSh);
 
   ctx.restore();
 }
@@ -226,40 +247,84 @@ function drawMage(ctx, x, y, flip, frame) {
   const S = 2;
   ctx.save();
   if (flip) { ctx.translate(x + 9*S, 0); ctx.scale(-1, 1); x = 0; }
+  const px = (cx, cy, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + cx*S, y + cy*S, w*S, h*S); };
 
-  // Chapéu (ponta + aba)
-  ctx.fillStyle = '#110022';
-  ctx.fillRect(x + 4*S, y,      S,   3*S);
-  ctx.fillRect(x + 3*S, y + 3*S, 3*S, 2*S);
-  ctx.fillRect(x + S,   y + 5*S, 7*S, S);
-  // Rosto
-  ctx.fillStyle = '#f0c090';
-  ctx.fillRect(x + 2*S, y + 6*S, 5*S, 4*S);
-  // Olhos mágicos
-  ctx.fillStyle = '#ff44ff';
-  ctx.fillRect(x + 3*S, y + 7*S, S,   S);
-  ctx.fillRect(x + 5*S, y + 7*S, S,   S);
-  // Manto roxo
-  ctx.fillStyle = '#8800cc';
-  ctx.fillRect(x + S,   y + 10*S, 7*S, 5*S);
-  // Capa clara
-  ctx.fillStyle = '#cc99ff';
-  ctx.fillRect(x,       y + 10*S, S,   4*S);
-  ctx.fillRect(x + 8*S, y + 10*S, S,   4*S);
-  // Orbe mágico na mão
-  ctx.fillStyle = '#ffbb00';
-  const orbY = frame === 1 ? y + 13*S : y + 14*S; // orbe sobe/desce
-  ctx.beginPath();
-  ctx.arc(x + 9*S, orbY, 3, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#fff088';
+  // ── Chapéu pontudo ──
+  px(4,0,1,1,'#1a0833');
+  px(3,1,3,1,'#1a0833');
+  px(3,1,1,1,'#3a1a5a');          // brilho
+  px(2,2,5,1,'#1a0833');
+  px(1,3,7,2,'#1a0833');          // aba
+  px(1,3,7,1,'#3a1a5a');
+  px(4,2,1,1,'#ffdd00');          // estrela
+  // ── Rosto ──
+  px(2,5,5,4,'#f0c090');
+  px(2,5,1,4,'#c89060');          // sombra
+  // olhos mágicos brilhantes
+  px(3,6,1,1,'#ff66ff'); px(5,6,1,1,'#ff66ff');
+  ctx.fillStyle = '#ffccff';
+  ctx.fillRect(x + 3*S, y + 6*S, S/2, S/2);
+  ctx.fillRect(x + 5*S, y + 6*S, S/2, S/2);
+  // barba curta
+  px(3,8,3,1,'#e0d4ea');
+  // ── Manto roxo ──
+  px(1,9,7,5,'#7a1ad0');
+  px(1,9,7,1,'#9a4ae8');          // ombro claro
+  px(1,9,1,5,'#4a0d8a');          // sombra
+  px(3,10,3,3,'#4a0d8a');         // dobra central
+  // mangas claras
+  px(0,9,1,4,'#9a4ae8');
+  px(8,9,1,4,'#9a4ae8');
+  // ── Orbe mágico flutuante ──
+  const orbY = frame === 1 ? y + 12*S : y + 13*S;
+  ctx.globalAlpha = 0.4;          // glow
+  ctx.fillStyle = '#ffdd44';
+  ctx.beginPath(); ctx.arc(x + 9*S, orbY, 7, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffcc22';
+  ctx.beginPath(); ctx.arc(x + 9*S, orbY, 4, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff0a0';
   ctx.fillRect(x + 9*S - S/2, orbY - S/2, S, S);
-  // Pernas
-  ctx.fillStyle = '#550099';
-  const lA = frame === 1 ? S : 0;
-  const lB = frame === 1 ? 0 : S;
-  ctx.fillRect(x + 2*S, y + 15*S, 2*S, 3*S + lA);
-  ctx.fillRect(x + 5*S, y + 15*S, 2*S, 3*S + lB);
+
+  ctx.restore();
+}
+
+function drawBat(ctx, x, y, flip, frame) {
+  const S = 2;
+  ctx.save();
+  const px = (cx, cy, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + cx*S, y + cy*S, w*S, h*S); };
+
+  const body = '#3a1a4a', bodyHi = '#5a2a6a', wing = '#2a1038', wingEdge = '#542466';
+
+  // ── Asas (flap) ──
+  if (frame === 0) {
+    // asas para cima/abertas
+    px(0,0,2,1,wingEdge); px(1,1,2,1,wing); px(2,2,2,1,wing);
+    px(6,0,2,1,wingEdge); px(5,1,2,1,wing); px(4,2,2,1,wing);
+  } else {
+    // asas para baixo
+    px(0,2,2,1,wingEdge); px(1,2,2,1,wing);  px(2,2,2,1,wing);
+    px(6,2,2,1,wingEdge); px(5,2,2,1,wing);  px(4,2,2,1,wing);
+    px(0,3,1,1,wingEdge); px(7,3,1,1,wingEdge);
+  }
+  // ── Orelhas ──
+  px(3,0,1,1,body);
+  px(4,0,1,1,body);
+  // ── Corpo ──
+  px(3,1,2,4,body);
+  px(3,1,2,1,bodyHi);             // topo claro
+  px(3,5,2,1,'#22102e');          // pés/sombra
+  // ── Olhos vermelhos brilhantes ──
+  px(3,2,1,1,'#ff2828'); px(4,2,1,1,'#ff2828');
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(x + 3*S - 1, y + 2*S - 1, 2*S + 2, S + 2);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffd0d0';      // brilho pupila
+  ctx.fillRect(x + 3*S, y + 2*S, S/2, S/2);
+  ctx.fillRect(x + 4*S, y + 2*S, S/2, S/2);
+  // presas
+  px(3,4,1,1,'#f0e8e8'); px(4,4,1,1,'#f0e8e8');
 
   ctx.restore();
 }
@@ -300,31 +365,65 @@ function gerarAndares() {
     // Inimigos (só andares não-boss, a partir do andar 2)
     const inimigos = [];
     if (!isBoss && f > 1) {
-      const numEn = Math.min(Math.floor(f / 3) + 1, 3);
-      const tipos = ['goblin', 'esqueleto', 'mago'];
+      // ── Progressão: tipos liberados aos poucos ──
+      //   2-2  : só goblins
+      //   3-5  : goblins + esqueletos
+      //   6+   : goblins + esqueletos + magos
+      const tiposBase = ['goblin'];
+      if (f >= 3) tiposBase.push('esqueleto');
+      if (f >= 6) tiposBase.push('mago');
+
+      // Quantidade de inimigos de chão sobe gradualmente (até 4)
+      const numEn = Math.min(1 + Math.floor(f / 4), 4);
       for (let e = 0; e < numEn; e++) {
-        const tipo = tipos[Math.floor(seededRnd(seed * 3, e) * tipos.length)];
+        const tipo = tiposBase[Math.floor(seededRnd(seed * 3, e) * tiposBase.length)];
         // Usa degrau 1 (plats[1]) ou 2 (plats[2]) para posicionar inimigos
         const pIdx = 1 + (e % (plats.length - 1));
         const pl   = plats[Math.min(pIdx, plats.length - 1)];
         const charH = tipo === 'goblin' ? 26 : 28;
+        const spd   = 0.24 + (f - 1) * 0.006 + seededRnd(seed, e + 61) * 0.07;
         inimigos.push({
           id: f * 10 + e,
           x:  pl.x + 10 + Math.floor(seededRnd(seed, e + 50) * Math.max(0, pl.w - 30)),
           y:  pl.y - charH,
           w:  tipo === 'goblin' ? 20 : 18,
           h:  charH,
-          vx: (seededRnd(seed, e + 60) > 0.5 ? 1 : -1) * (0.22 + (f - 1) * 0.005 + seededRnd(seed, e + 61) * 0.06),
-          baseSpeed: 0.22 + (f - 1) * 0.005 + seededRnd(seed, e + 61) * 0.06, // velocidade original (nunca muda)
+          vx: (seededRnd(seed, e + 60) > 0.5 ? 1 : -1) * spd,
+          baseSpeed: spd,     // velocidade original (nunca muda)
           knockbackTimer: 0,  // frames de knockback ativo
           knockbackVx: 0,
           hitCooldown: 0,     // invencibilidade após levar dano (evita multi-hit)
           tipo, platX: pl.x, platW: pl.w,
           hp: 1,              // todos morrem em 1 hit — sempre
-          maxHp: 1 + Math.floor(f / 5),
+          maxHp: 1,
           vivo: true, cooldown: Math.floor(seededRnd(seed, e + 70) * 120),
           frame: 0, frameTick: 0,
         });
+      }
+
+      // ── Morcegos voadores (novo mob, a partir do andar 4) ──
+      if (f >= 4) {
+        const numBats = Math.min(Math.floor((f - 4) / 5) + 1, 2);
+        for (let bI = 0; bI < numBats; bI++) {
+          const baseY = groundY - 80 - Math.floor(seededRnd(seed * 7, bI) * 70); // 80-150px acima do chão
+          const bspd  = 0.5 + (f - 4) * 0.012 + seededRnd(seed * 7, bI + 5) * 0.2;
+          inimigos.push({
+            id: f * 10 + 90 + bI,
+            x:  20 + Math.floor(seededRnd(seed * 7, bI + 9) * (GW - 60)),
+            y:  baseY,
+            baseY,                  // centro da oscilação vertical
+            w:  16, h: 10,
+            vx: (seededRnd(seed * 7, bI + 12) > 0.5 ? 1 : -1) * bspd,
+            baseSpeed: bspd,
+            flyPhase: seededRnd(seed * 7, bI + 15) * Math.PI * 2,
+            flyAmp:   16 + Math.floor(seededRnd(seed * 7, bI + 18) * 12),
+            knockbackTimer: 0, knockbackVx: 0, hitCooldown: 0,
+            tipo: 'morcego', platX: 0, platW: GW,
+            hp: 1, maxHp: 1,
+            vivo: true, cooldown: 0,
+            frame: 0, frameTick: 0,
+          });
+        }
       }
     }
 
@@ -682,6 +781,33 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
 
         const mult = 1 + gs.bossCount * 0.04;
 
+        // ── Morcego: voa em padrão senoidal e mergulha no player ──
+        if (en.tipo === 'morcego') {
+          en.flyPhase += 0.06;
+          if (en.knockbackTimer > 0) {
+            en.x += en.knockbackVx;
+            en.knockbackTimer--;
+          } else {
+            const dir = en.vx >= 0 ? 1 : -1;
+            en.x += dir * en.baseSpeed * mult * 1.25;
+            if (en.x < 4 || en.x + en.w > GW - 4) en.vx *= -1;
+            // mergulho suave em direção ao player quando perto na horizontal
+            if (Math.abs((en.x + en.w/2) - (p.x + p.w/2)) < 110) {
+              const dy = (p.y + p.h/2) - en.baseY;
+              en.baseY += Math.sign(dy) * Math.min(Math.abs(dy), 0.5);
+            }
+          }
+          en.y = en.baseY + Math.sin(en.flyPhase) * en.flyAmp;
+          // flap das asas (mais rápido que os outros)
+          en.frameTick++;
+          if (en.frameTick >= 6) { en.frame ^= 1; en.frameTick = 0; }
+          // dano corpo a corpo
+          if (p.invincible <= 0 &&
+              p.x < en.x + en.w && p.x + p.w > en.x &&
+              p.y < en.y + en.h && p.y + p.h > en.y) dano(1);
+          continue;
+        }
+
         if (en.knockbackTimer > 0) {
           // Knockback temporário — não altera a velocidade de patrulha
           en.x += en.knockbackVx;
@@ -740,7 +866,7 @@ export default function Game({ tema, materia, modoIA = true, onSair }) {
         if (!en.vivo) continue;
         const sy = en.y - gs.camY;
         if (sy < -40 || sy > GH + 40) continue;
-        const fn = { goblin: drawGoblin, esqueleto: drawSkeleton, mago: drawMage }[en.tipo] || drawGoblin;
+        const fn = { goblin: drawGoblin, esqueleto: drawSkeleton, mago: drawMage, morcego: drawBat }[en.tipo] || drawGoblin;
         fn(ctx, en.x, sy, en.vx < 0, en.frame);
         if (en.hp < en.maxHp) {
           ctx.fillStyle = '#ff000066';
