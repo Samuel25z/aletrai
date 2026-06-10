@@ -11,9 +11,9 @@ const MOVE_SPD   = 2.6;
 const FLOOR_H    = 200;
 const BOSS_EVERY = 5;
 const MAX_FLOORS = 30;
-const LAVA_INIT_SPD  = 0.08;
-const LAVA_ACCEL     = 0.000035;
-const LAVA_START_OFF = 400; // px abaixo do mundo
+const LAVA_INIT_SPD  = 0.07;
+const LAVA_ACCEL     = 0.000028;
+const LAVA_START_OFF = 480; // px abaixo do mundo
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
@@ -401,23 +401,23 @@ function gerarAndares() {
     // Inimigos (só andares não-boss, a partir do andar 2)
     const inimigos = [];
     if (!isBoss && f > 1) {
-      // ── Progressão: tipos liberados aos poucos ──
-      //   2-2  : só goblins
-      //   3-5  : goblins + esqueletos
-      //   6+   : goblins + esqueletos + magos
+      // ── Progressão SUAVE: tipos liberados bem aos poucos ──
+      //   2-4   : só goblins (lentos)
+      //   5-11  : goblins + esqueletos
+      //   12+   : goblins + esqueletos + magos
       const tiposBase = ['goblin'];
-      if (f >= 3) tiposBase.push('esqueleto');
-      if (f >= 6) tiposBase.push('mago');
+      if (f >= 5)  tiposBase.push('esqueleto');
+      if (f >= 12) tiposBase.push('mago');
 
-      // Quantidade de inimigos de chão sobe gradualmente (até 4)
-      const numEn = Math.min(1 + Math.floor(f / 4), 4);
+      // Quantidade de inimigos de chão cresce devagar (1 no começo, até 4 lá no alto)
+      const numEn = Math.min(1 + Math.floor(f / 6), 4);
       for (let e = 0; e < numEn; e++) {
         const tipo = tiposBase[Math.floor(seededRnd(seed * 3, e) * tiposBase.length)];
         // Usa degrau 1 (plats[1]) ou 2 (plats[2]) para posicionar inimigos
         const pIdx = 1 + (e % (plats.length - 1));
         const pl   = plats[Math.min(pIdx, plats.length - 1)];
         const charH = tipo === 'goblin' ? 26 : 28;
-        const spd   = 0.24 + (f - 1) * 0.006 + seededRnd(seed, e + 61) * 0.07;
+        const spd   = 0.16 + (f - 1) * 0.004 + seededRnd(seed, e + 61) * 0.05;
         inimigos.push({
           id: f * 10 + e,
           x:  pl.x + 10 + Math.floor(seededRnd(seed, e + 50) * Math.max(0, pl.w - 30)),
@@ -437,12 +437,12 @@ function gerarAndares() {
         });
       }
 
-      // ── Morcegos voadores (novo mob, a partir do andar 4) ──
-      if (f >= 4) {
-        const numBats = Math.min(Math.floor((f - 4) / 5) + 1, 2);
+      // ── Morcegos voadores (só a partir do andar 10) ──
+      if (f >= 10) {
+        const numBats = Math.min(Math.floor((f - 10) / 8) + 1, 2);
         for (let bI = 0; bI < numBats; bI++) {
           const baseY = groundY - 80 - Math.floor(seededRnd(seed * 7, bI) * 70); // 80-150px acima do chão
-          const bspd  = 0.5 + (f - 4) * 0.012 + seededRnd(seed * 7, bI + 5) * 0.2;
+          const bspd  = 0.42 + (f - 10) * 0.008 + seededRnd(seed * 7, bI + 5) * 0.15;
           inimigos.push({
             id: f * 10 + 90 + bI,
             x:  20 + Math.floor(seededRnd(seed * 7, bI + 9) * (GW - 60)),
@@ -745,7 +745,7 @@ async function gerarPergsBoss(tema, materia, modoIA) {
   return [...base].sort(() => Math.random() - 0.5).slice(0, 3);
 }
 
-export default function Game({ tema, materia, modoIA = true, onSair, pistola = false, raio = false, puloDuplo = false }) {
+export default function Game({ tema, materia, modoIA = true, onSair, onLoja, pistola = false, raio = false, puloDuplo = false }) {
   const canvasRef = useRef(null);
   const gsRef     = useRef(null);
   const keysRef    = useRef({});
@@ -1252,7 +1252,8 @@ export default function Game({ tema, materia, modoIA = true, onSair, pistola = f
             <div className="text-6xl mb-3">💀</div>
             <p className="text-red-400 text-xs font-black uppercase tracking-widest mb-1">GAME OVER</p>
             <p className="text-white font-bold text-2xl mb-1">Andar {andar}</p>
-            <p className="text-gray-500 text-sm mb-5">Score: {score}</p>
+            <p className="text-gray-400 text-sm mb-1">Score: {score}</p>
+            <p className="text-yellow-400 text-sm font-bold mb-5">🪙 {gsRef.current?.moedasRun || 0} moedas coletadas</p>
             {erradas.length > 0 && (
               <div className="w-full max-w-sm bg-gray-900/80 border border-amber-500/30 rounded-2xl p-4 mb-5 max-h-52 overflow-y-auto">
                 <p className="text-amber-400 text-xs font-black mb-3 uppercase">📚 O que você errou:</p>
@@ -1269,6 +1270,11 @@ export default function Game({ tema, materia, modoIA = true, onSair, pistola = f
             <button onClick={reiniciar} className="w-full max-w-xs py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-lg rounded-2xl mb-3">
               🔄 Tentar novamente
             </button>
+            {onLoja && (
+              <button onClick={onLoja} className="w-full max-w-xs py-3 mb-3 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-base rounded-2xl">
+                🏪 Abrir loja
+              </button>
+            )}
             <button onClick={() => onSair({ xpGanho: Math.max(10, Math.floor(score / 10)) })} className="text-gray-600 hover:text-gray-400 text-sm">
               Voltar ao menu
             </button>

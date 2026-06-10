@@ -186,6 +186,7 @@ export default function ChaoELava() {
       materia={null}
       modoIA={true}
       onSair={sairDoJogo}
+      onLoja={() => setFase('loja')}
       pistola={itens.pistola}
       raio={itens.raio}
       puloDuplo={itens.puloDuplo}
