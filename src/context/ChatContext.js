@@ -60,6 +60,7 @@ export function ChatProvider({ children }) {
         setConversaAtualId(null);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario?.id]);
 
   // Persiste no localStorage

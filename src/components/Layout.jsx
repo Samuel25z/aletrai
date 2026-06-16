@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth, calcularMembro } from '../context/AuthContext';
 import LogoMarca from './LogoMarca';
 
@@ -11,7 +11,6 @@ const NAV = [
 
 export default function Layout({ children }) {
   const { usuario } = useAuth();
-  const navigate = useNavigate();
   const xpTotal = usuario?.xpTotal || usuario?.xp || 0;
   const { membro } = calcularMembro(xpTotal);
 

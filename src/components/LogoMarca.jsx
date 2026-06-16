@@ -4,7 +4,6 @@ import React from 'react';
 //          "dark"  = texto escuro (para fundos brancos)
 export default function LogoMarca({ size = 40, variant = 'light', className = '' }) {
   const textColor = variant === 'dark' ? '#111' : '#fff';
-  const aiColor   = '#7c3aed';
 
   return (
     <svg

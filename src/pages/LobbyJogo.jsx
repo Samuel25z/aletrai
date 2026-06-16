@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const JOGOS = {
   'chao-e-lava': {
@@ -74,7 +73,6 @@ function Digitando({ cor }) {
 export default function LobbyJogo() {
   const { jogoId } = useParams();
   const navigate = useNavigate();
-  const { usuario } = useAuth();
   const jogo = JOGOS[jogoId];
 
   const [mensagens, setMensagens] = useState([]);
@@ -92,6 +90,7 @@ export default function LobbyJogo() {
     setTimeout(() => {
       setMensagens([{ de: 'ia', texto: jogo.boasVindas }]);
     }, 400);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -108,13 +107,6 @@ export default function LobbyJogo() {
     setMensagens(novasMensagens);
     setCarregando(true);
 
-    const apiKey = localStorage.getItem('aletrai_claude_key');
-    if (!apiKey) {
-      setMensagens(m => [...m, { de: 'ia', texto: 'Você precisa configurar sua chave API Claude no Perfil para usar este recurso.' }]);
-      setCarregando(false);
-      return;
-    }
-
     // Na primeira resposta do usuário, salva o tópico e pede mini-aula
     const ehPrimeiraMensagem = turno === 0;
     if (ehPrimeiraMensagem) setTopico(texto);
@@ -130,14 +122,9 @@ export default function LobbyJogo() {
          Responda dúvidas de forma curta e animada. Se não houver mais dúvidas, incentive o jogador a iniciar o jogo.`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/claude', {
         method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 600,
@@ -150,7 +137,7 @@ export default function LobbyJogo() {
       setMensagens(m => [...m, { de: 'ia', texto: resposta }]);
       if (ehPrimeiraMensagem) setPronto(true);
     } catch {
-      setMensagens(m => [...m, { de: 'ia', texto: 'Erro ao conectar com a IA. Verifique sua chave API.' }]);
+      setMensagens(m => [...m, { de: 'ia', texto: 'Erro ao conectar com a IA. Tente novamente em instantes.' }]);
     }
     setCarregando(false);
   }

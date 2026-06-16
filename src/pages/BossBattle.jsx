@@ -186,6 +186,7 @@ function Batalha({ boss, tema, onVitoria, onDerrota }) {
     if (tempo <= 0) { errou(); return; }
     const t = setInterval(() => setTempo(p => p - 1), 1000);
     return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tempo, carregando, feedback, perguntas]);
 
   const errou = useCallback(() => {

@@ -235,8 +235,6 @@ export default function Game({ tema, materia, modoIA, onSair }) {
   const perg = perguntas[pergIdx];
   if (!perg) return null;
 
-  const progBoss = Math.max(0, bossHp / boss.hp);
-
   return (
     <div className={`flex flex-col min-h-screen bg-gray-950 ${shake ? 'animate-bounce' : ''}`}>
       {/* Boss arena */}

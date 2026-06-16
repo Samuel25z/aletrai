@@ -535,7 +535,7 @@ function drawRaioFX(ctx, gs) {
 
 // ─── Renderer: fundo + plataformas ───────────────────────────────────────────
 function drawWorld(ctx, gs) {
-  const { camY, andares, worldH, runTime } = gs;
+  const { camY, andares, worldH } = gs;
 
   // Fundo com leve gradiente vertical (caverna)
   const bgGrad = ctx.createLinearGradient(0, 0, 0, GH);
@@ -1130,7 +1130,7 @@ export default function Game({ tema, materia, modoIA = true, onSair, onLoja, pis
     drawHUD(ctx, vidas, gs.currentFloor, gs.lavaSpeed, gs.moedasRun, raio, gs.raioCooldown);
 
     rafRef.current = requestAnimationFrame(gameLoop);
-  }, [overlay, vidas, tema, materia, pistola, raio, puloDuplo]);
+  }, [overlay, vidas, tema, materia, modoIA, pistola, raio, puloDuplo]);
 
   function dano(qtd) {
     const gs = gsRef.current;

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 // Partículas de fogo que saem para fora do card
 const CHAMAS = [
@@ -219,7 +218,6 @@ const JOGOS = [
 
 export default function Jogos() {
   const navigate = useNavigate();
-  const { usuario } = useAuth();
   const disponiveis = JOGOS.filter(j => j.disponivel);
   const emBreve = JOGOS.filter(j => !j.disponivel);
 

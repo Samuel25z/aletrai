@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import Game from './Game';
 
 export default function DungeonQuiz() {
   const navigate = useNavigate();
-  const { ganharXPMateria } = useAuth();
   const [config, setConfig] = useState(null);
 
   useEffect(() => {

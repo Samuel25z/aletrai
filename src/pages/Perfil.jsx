@@ -118,64 +118,22 @@ async function hashSenha(senha) {
 }
 
 function ConfigAPI() {
-  const salva = !!localStorage.getItem('aletrai_claude_key');
-  const [aberta, setAberta] = useState(false);
-  const [chave, setChave]   = useState('');
-  const [status, setStatus] = useState(salva ? 'salva' : 'vazia');
-
-  function salvar() {
-    if (!chave.startsWith('sk-ant')) return;
-    localStorage.setItem('aletrai_claude_key', chave);
-    setStatus('salva'); setChave(''); setAberta(false);
-  }
-  function remover() {
-    localStorage.removeItem('aletrai_claude_key');
-    setStatus('vazia'); setAberta(false);
-  }
-
   return (
     <div>
       <h3 className="font-bold text-gray-900 mb-3">Inteligência Artificial</h3>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <button onClick={() => setAberta(a => !a)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl">
+        <div className="w-full flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <span className="text-lg">🔑</span>
+            <span className="text-lg">🤖</span>
             <div className="text-left">
-              <p className="text-sm font-semibold text-gray-800">Chave API Claude</p>
-              <p className="text-xs text-gray-400">Necessária para gerar perguntas com IA</p>
+              <p className="text-sm font-semibold text-gray-800">IA do AletrAI</p>
+              <p className="text-xs text-gray-400">Perguntas e mini-aulas geradas automaticamente</p>
             </div>
           </div>
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-            status === 'salva' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-100 text-gray-400'
-          }`}>
-            {status === 'salva' ? '✓ Ativa' : 'Não configurada'}
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100">
+            ✓ Ativa
           </span>
-        </button>
-        {aberta && (
-          <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-            <p className="text-xs text-gray-400">Cole sua chave Anthropic para ativar a IA nos jogos.</p>
-            <input type="password" value={chave} onChange={e => setChave(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && salvar()} placeholder="sk-ant-..."
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500"/>
-            <div className="flex gap-2">
-              <button onClick={salvar} disabled={!chave.startsWith('sk-ant')}
-                className="flex-1 py-2 bg-violet-600 disabled:opacity-30 text-white text-sm font-bold rounded-xl">
-                Salvar
-              </button>
-              {status === 'salva' && (
-                <button onClick={remover}
-                  className="px-4 py-2 text-red-500 text-sm font-bold rounded-xl bg-red-50 border border-red-100">
-                  Remover
-                </button>
-              )}
-            </div>
-            <a href="https://console.anthropic.com" target="_blank" rel="noreferrer"
-              className="block text-center text-xs text-violet-600 hover:underline">
-              Obter chave → console.anthropic.com
-            </a>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

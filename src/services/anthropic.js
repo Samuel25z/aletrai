@@ -1,12 +1,8 @@
-// Serviço Claude API - AletrAI
-// Chave configurada via variável de ambiente ou localStorage
-// Para configurar: localStorage.setItem('aletrai_claude_key', 'sk-ant-...')
+// Serviço Claude — AletrAI
+// As chamadas passam pelo proxy serverless /api/claude, que injeta a chave
+// no servidor (variável ANTHROPIC_API_KEY no Vercel). A chave nunca vai ao navegador.
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-
-function getApiKey() {
-  return process.env.REACT_APP_CLAUDE_KEY || localStorage.getItem('aletrai_claude_key') || '';
-}
+const API_URL = '/api/claude';
 
 const SYSTEM_PROMPT = `Você é o AletrAI — tutor de estudos gamificado para estudantes brasileiros.
 
@@ -36,32 +32,15 @@ Mas NÃO emita marcadores de jogo no chat — os jogos ficam na seção de jogos
 
 
 export async function enviarMensagem(mensagens, onChunk) {
-  const apiKey = getApiKey();
-
-  if (!apiKey) {
-    throw new Error('CHAVE_NAO_CONFIGURADA');
-  }
-
-  const payload = {
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    stream: true,
-    messages: mensagens.map(m => ({
-      role: m.role,
-      content: m.content,
-    })),
-  };
-
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      system: SYSTEM_PROMPT,
+      messages: mensagens.map(m => ({ role: m.role, content: m.content })),
+    }),
   });
 
   if (!response.ok) {
@@ -69,35 +48,10 @@ export async function enviarMensagem(mensagens, onChunk) {
     throw new Error(err.error?.message || `Erro ${response.status}`);
   }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let textoCompleto = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value, { stream: true });
-    const linhas = chunk.split('\n');
-
-    for (const linha of linhas) {
-      if (!linha.startsWith('data: ')) continue;
-      const data = linha.slice(6).trim();
-      if (data === '[DONE]' || !data) continue;
-
-      try {
-        const json = JSON.parse(data);
-        if (json.type === 'content_block_delta' && json.delta?.type === 'text_delta') {
-          textoCompleto += json.delta.text;
-          onChunk?.(json.delta.text, textoCompleto);
-        }
-      } catch {
-        // ignora linhas malformadas
-      }
-    }
-  }
-
-  return textoCompleto;
+  const data = await response.json();
+  const texto = data.content?.[0]?.text || '';
+  onChunk?.(texto, texto);
+  return texto;
 }
 
 export function perguntasIniciais(materia) {
@@ -110,11 +64,6 @@ Aqui você aprende conversando e praticando com jogos reais.
 
 // ─── Geração de perguntas para os jogos (via Claude API) ─────────────────────
 export async function gerarPerguntasJogo(tema, materia, quantidade = 12) {
-  const apiKey = getApiKey();
-
-  // Sem chave: usa fallback de mock
-  if (!apiKey) return null;
-
   const prompt = `Gere ${quantidade} perguntas de múltipla escolha sobre "${tema}" para estudantes de "${materia}".
 
 Responda SOMENTE com JSON válido — sem texto antes ou depois, sem markdown, sem explicações. Formato exato:
@@ -138,12 +87,7 @@ Regras:
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
