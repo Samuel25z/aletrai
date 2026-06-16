@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getApiKey } from '../services/anthropic';
 
 const JOGOS = {
   'chao-e-lava': {
@@ -122,16 +123,33 @@ export default function LobbyJogo() {
          Responda dúvidas de forma curta e animada. Se não houver mais dúvidas, incentive o jogador a iniciar o jogo.`;
 
     try {
-      const res = await fetch('/api/claude', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 600,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: texto }],
-        }),
-      });
+      const apiKey = getApiKey();
+      const res = apiKey
+        ? await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 600,
+              system: systemPrompt,
+              messages: [{ role: 'user', content: texto }],
+            }),
+          })
+        : await fetch('/api/claude', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 600,
+              system: systemPrompt,
+              messages: [{ role: 'user', content: texto }],
+            }),
+          });
       const data = await res.json();
       const resposta = data.content?.[0]?.text || 'Não consegui responder. Tente novamente.';
       setMensagens(m => [...m, { de: 'ia', texto: resposta }]);

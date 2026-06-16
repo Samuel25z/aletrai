@@ -118,22 +118,74 @@ async function hashSenha(senha) {
 }
 
 function ConfigAPI() {
+  const [aberta, setAberta] = useState(false);
+  const [chave, setChave] = useState(() => localStorage.getItem('aletrai_claude_key') || '');
+  const [salvo, setSalvo] = useState(false);
+  const temChavePropria = !!localStorage.getItem('aletrai_claude_key');
+
+  function salvar() {
+    if (chave.trim()) {
+      localStorage.setItem('aletrai_claude_key', chave.trim());
+    } else {
+      localStorage.removeItem('aletrai_claude_key');
+    }
+    setSalvo(true);
+    setTimeout(() => setSalvo(false), 1500);
+  }
+
+  function remover() {
+    localStorage.removeItem('aletrai_claude_key');
+    setChave('');
+  }
+
   return (
     <div>
       <h3 className="font-bold text-gray-900 mb-3">Inteligência Artificial</h3>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="w-full flex items-center justify-between px-4 py-3.5">
+        <button onClick={() => setAberta(a => !a)}
+          className="w-full flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-3">
             <span className="text-lg">🤖</span>
             <div className="text-left">
               <p className="text-sm font-semibold text-gray-800">IA do AletrAI</p>
-              <p className="text-xs text-gray-400">Perguntas e mini-aulas geradas automaticamente</p>
+              <p className="text-xs text-gray-400">
+                {temChavePropria ? 'Usando sua chave de API própria' : 'Perguntas e mini-aulas geradas automaticamente'}
+              </p>
             </div>
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100">
-            ✓ Ativa
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+            temChavePropria
+              ? 'bg-violet-50 text-violet-600 border-violet-100'
+              : 'bg-green-50 text-green-600 border-green-100'
+          }`}>
+            {temChavePropria ? '🔑 Própria' : '✓ Ativa'}
           </span>
-        </div>
+        </button>
+
+        {aberta && (
+          <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+            <p className="text-xs text-gray-400">
+              Por padrão a IA já funciona automaticamente. Se quiser usar sua própria chave da Anthropic
+              (para testes), cole abaixo — ela fica salva só neste navegador.
+            </p>
+            <input type="password" value={chave} onChange={e => setChave(e.target.value)}
+              placeholder="sk-ant-..."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500"/>
+            {salvo && <p className="text-xs text-green-600 bg-green-50 px-3 py-2 rounded-xl">✓ Salvo neste navegador!</p>}
+            <div className="flex gap-2">
+              <button onClick={salvar}
+                className="flex-1 py-2.5 bg-violet-600 text-white text-sm font-black rounded-xl transition-colors">
+                Salvar chave
+              </button>
+              {temChavePropria && (
+                <button onClick={remover}
+                  className="px-4 py-2.5 border-2 border-gray-200 text-gray-600 text-sm font-bold rounded-xl">
+                  Remover
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,34 @@
 // Serviço Claude — AletrAI
-// As chamadas passam pelo proxy serverless /api/claude, que injeta a chave
-// no servidor (variável ANTHROPIC_API_KEY no Vercel). A chave nunca vai ao navegador.
+// Por padrão as chamadas passam pelo proxy serverless /api/claude (chave no servidor).
+// Se o usuário configurar a própria chave em Perfil, ela é usada direto (modo de teste).
 
 const API_URL = '/api/claude';
+const DIRECT_URL = 'https://api.anthropic.com/v1/messages';
+
+export function getApiKey() {
+  return localStorage.getItem('aletrai_claude_key') || '';
+}
+
+async function chamarClaude(body) {
+  const apiKey = getApiKey();
+  if (apiKey) {
+    return fetch(DIRECT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(body),
+    });
+  }
+  return fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
 
 const SYSTEM_PROMPT = `Você é o AletrAI — tutor de estudos gamificado para estudantes brasileiros.
 
@@ -32,15 +58,11 @@ Mas NÃO emita marcadores de jogo no chat — os jogos ficam na seção de jogos
 
 
 export async function enviarMensagem(mensagens, onChunk) {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: mensagens.map(m => ({ role: m.role, content: m.content })),
-    }),
+  const response = await chamarClaude({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    system: SYSTEM_PROMPT,
+    messages: mensagens.map(m => ({ role: m.role, content: m.content })),
   });
 
   if (!response.ok) {
@@ -85,14 +107,10 @@ Regras:
 - NÃO use markdown no JSON`;
 
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const response = await chamarClaude({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: prompt }],
     });
 
     if (!response.ok) return null;
