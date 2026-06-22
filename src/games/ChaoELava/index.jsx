@@ -162,7 +162,7 @@ function Loja({ onJogar, onVoltar }) {
 // ─── Orquestrador ───────────────────────────────────────────────────────────
 export default function ChaoELava() {
   const navigate = useNavigate();
-  const { ganharXPMateria } = useAuth(); // eslint-disable-line no-unused-vars
+  const { ganharXP } = useAuth();
   const [tema, setTema]   = useState(null);
   const [fase, setFase]   = useState('loja'); // loja | jogando
   const [itens, setItens] = useState({ pistola: false, raio: false, puloDuplo: false });
@@ -172,7 +172,10 @@ export default function ChaoELava() {
   }, []);
 
   function iniciar(cfg) { setItens(cfg); setFase('jogando'); }
-  function sairDoJogo() { navigate('/jogos'); }
+  function sairDoJogo(resultado) {
+    if (resultado?.xpGanho) ganharXP(resultado.xpGanho);
+    navigate('/jogos');
+  }
 
   if (tema === null) return null;
 

@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Game from './Game';
 
-export default function DungeonQuiz() {
+export default function CobraSaber() {
   const navigate = useNavigate();
   const { ganharXP } = useAuth();
-  const [config, setConfig] = useState(null);
+  const [tema, setTema] = useState(null);
 
   useEffect(() => {
-    const topico = localStorage.getItem('aletrai_topico_atual') || 'Conhecimentos Gerais';
-    setConfig({ materia: null, tema: topico, modoIA: true });
+    setTema(localStorage.getItem('aletrai_topico_atual') || 'Conhecimentos Gerais');
   }, []);
 
   function sairDoJogo(resultado) {
@@ -18,7 +17,7 @@ export default function DungeonQuiz() {
     navigate('/jogos');
   }
 
-  if (!config) return null;
+  if (tema === null) return null;
 
-  return <Game tema={config.tema} materia={config.materia} modoIA={config.modoIA} onSair={sairDoJogo} />;
+  return <Game tema={tema} materia={null} onSair={sairDoJogo} />;
 }

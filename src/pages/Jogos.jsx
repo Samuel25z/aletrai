@@ -197,22 +197,24 @@ const JOGOS = [
   {
     id: 'space-run',
     nome: 'Space Run',
-    desc: 'Nave em modo endless runner',
+    desc: 'Voe, colete estrelas e responda',
     tag: 'Endless',
-    disponivel: false,
+    disponivel: true,
+    rota: '/jogos/space-run',
     cor: '#0ea5e9',
     bg: '#f0f9ff',
     emoji: '🚀',
   },
   {
-    id: 'word-blast',
-    nome: 'Word Blast',
-    desc: 'Forme palavras antes do tempo',
-    tag: 'Puzzle',
-    disponivel: false,
+    id: 'cobra-saber',
+    nome: 'Cobra do Saber',
+    desc: 'Guie a cobra até a resposta certa',
+    tag: 'Arcade',
+    disponivel: true,
+    rota: '/jogos/cobra-saber',
     cor: '#22c55e',
     bg: '#f0fdf4',
-    emoji: '💥',
+    emoji: '🐍',
   },
 ];
 
@@ -240,20 +242,24 @@ export default function Jogos() {
         ))}
       </div>
 
-      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-8 mb-3">Em breve</p>
-      <div className="grid grid-cols-2 gap-3">
-        {emBreve.map(jogo => (
-          <div key={jogo.id} className="bg-white rounded-2xl p-4 border border-gray-100 opacity-60">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl mb-3"
-              style={{ background: jogo.bg }}>
-              {jogo.emoji}
-            </div>
-            <p className="text-gray-900 font-black text-sm">{jogo.nome}</p>
-            <p className="text-gray-400 text-xs mt-0.5">{jogo.desc}</p>
-            <p className="text-gray-300 text-xs font-bold mt-3">Em breve</p>
+      {emBreve.length > 0 && (
+        <>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-8 mb-3">Em breve</p>
+          <div className="grid grid-cols-2 gap-3">
+            {emBreve.map(jogo => (
+              <div key={jogo.id} className="bg-white rounded-2xl p-4 border border-gray-100 opacity-60">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl mb-3"
+                  style={{ background: jogo.bg }}>
+                  {jogo.emoji}
+                </div>
+                <p className="text-gray-900 font-black text-sm">{jogo.nome}</p>
+                <p className="text-gray-400 text-xs mt-0.5">{jogo.desc}</p>
+                <p className="text-gray-300 text-xs font-bold mt-3">Em breve</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
     </div>
   );

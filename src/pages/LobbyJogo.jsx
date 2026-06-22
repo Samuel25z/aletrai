@@ -23,6 +23,26 @@ const JOGOS = {
     descricao: 'RPG onde você derrota bosses respondendo perguntas',
     boasVindas: 'Bem-vindo ao **Dungeon Quiz**! ⚔️\n\nNeste dungeon você vai enfrentar bosses poderosos — e só o conhecimento te derrota eles!\n\nAntes de entrar no dungeon, me diz: **sobre qual matéria ou assunto você quer batalhar hoje?**',
   },
+  'space-run': {
+    nome: 'Space Run',
+    rota: '/jogos/space-run',
+    cor: '#0ea5e9',
+    corClaro: '#f0f9ff',
+    banner: null,
+    emoji: '🚀',
+    descricao: 'endless runner espacial onde você responde perguntas para sobreviver',
+    boasVindas: 'Bem-vindo ao **Space Run**! 🚀\n\nPilote sua nave pelo espaço, colete estrelas e desvie dos asteroides — e a cada campo de asteroides você responde uma pergunta para seguir vivo!\n\nAntes de decolar, me diz: **sobre qual matéria ou assunto você quer ser testado hoje?**',
+  },
+  'cobra-saber': {
+    nome: 'Cobra do Saber',
+    rota: '/jogos/cobra-saber',
+    cor: '#22c55e',
+    corClaro: '#f0fdf4',
+    banner: null,
+    emoji: '🐍',
+    descricao: 'arcade onde você guia a cobra até a resposta certa',
+    boasVindas: 'Bem-vindo à **Cobra do Saber**! 🐍\n\nGuie a cobra pelo tabuleiro e leve-a até o orbe com a resposta certa. Acertou, ela cresce; errou ou bateu, perde uma vida!\n\nAntes de começar, me diz: **sobre qual matéria ou assunto você quer praticar hoje?**',
+  },
 };
 
 function parseMarkdown(text) {
@@ -172,7 +192,14 @@ export default function LobbyJogo() {
     <div className="min-h-screen flex flex-col" style={{ background: '#f8f8fa' }}>
       {/* Header com banner */}
       <div className="relative h-44 shrink-0 overflow-hidden">
-        <img src={jogo.banner} alt={jogo.nome} className="w-full h-full object-cover" />
+        {jogo.banner ? (
+          <img src={jogo.banner} alt={jogo.nome} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-7xl"
+            style={{ background: `linear-gradient(135deg, ${jogo.cor}, ${jogo.cor}99)` }}>
+            {jogo.emoji}
+          </div>
+        )}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.65))' }} />
         <div className="absolute inset-0 flex flex-col justify-between p-4">
           <button onClick={() => navigate('/jogos')}

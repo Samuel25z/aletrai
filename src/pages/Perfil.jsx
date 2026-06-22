@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { WALLPAPERS, getWallpaperId, setWallpaper, wallpaperDesbloqueado } from '../wallpapers';
 
 const avatares = [
   { id: 'mago',       label: 'Mago',       src: '/avatares/mago.svg'       },
@@ -191,6 +192,68 @@ function ConfigAPI() {
   );
 }
 
+function Wallpapers({ xpTotal }) {
+  const [selecionado, setSelecionado] = useState(getWallpaperId());
+
+  function escolher(wp) {
+    if (!wallpaperDesbloqueado(wp, xpTotal)) return;
+    setWallpaper(wp.id);
+    setSelecionado(wp.id);
+  }
+
+  return (
+    <div>
+      <h3 className="font-bold text-gray-900 mb-3">Papéis de parede</h3>
+      <div className="grid grid-cols-3 gap-3">
+        {WALLPAPERS.map(wp => {
+          const desbloqueado = wallpaperDesbloqueado(wp, xpTotal);
+          const ativo = selecionado === wp.id;
+          return (
+            <button key={wp.id} onClick={() => escolher(wp)}
+              disabled={!desbloqueado}
+              className="relative rounded-2xl overflow-hidden transition-all"
+              style={{
+                aspectRatio: '1 / 1',
+                outline: ativo ? '3px solid #7c3aed' : '3px solid transparent',
+                outlineOffset: 2,
+                cursor: desbloqueado ? 'pointer' : 'not-allowed',
+              }}>
+              <div className="absolute inset-0" style={{ background: wp.css }} />
+              {/* mini card branco para simular o app */}
+              <div className="absolute left-2 right-2 top-2 bottom-5 rounded-lg bg-white/85 shadow-sm" />
+
+              {!desbloqueado && (
+                <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center gap-0.5 backdrop-blur-[1px]">
+                  <span className="text-lg">🔒</span>
+                  <span className="text-white text-[9px] font-bold leading-tight text-center px-1">
+                    Rank {wp.rankNome}
+                  </span>
+                </div>
+              )}
+
+              {ativo && (
+                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-violet-600 flex items-center justify-center shadow">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+
+              <span className="absolute bottom-1 left-0 right-0 text-center text-[10px] font-bold"
+                style={{ color: wp.escuro && desbloqueado ? '#fff' : '#374151' }}>
+                {wp.nome}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-gray-400 mt-3">
+        Continue ganhando XP nos jogos para desbloquear novos fundos. 🎨
+      </p>
+    </div>
+  );
+}
+
 function TrocarSenha({ usuario, atualizarUsuario }) {
   const [aberta, setAberta]         = useState(false);
   const [senhaAtual, setSenhaAtual] = useState('');
@@ -314,11 +377,8 @@ export default function Perfil() {
         </div>
       </div>
 
-      {/* Personalização em breve */}
-      <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4">
-        <p className="font-semibold text-violet-900 text-sm">Personalização em breve!</p>
-        <p className="text-violet-600 text-xs mt-0.5">Cores de fundo, temas e fontes. Sua plataforma, do seu jeito.</p>
-      </div>
+      {/* Papéis de parede */}
+      <Wallpapers xpTotal={usuario.xpTotal || usuario.xp || 0} />
 
       {/* Acessibilidade */}
       <Acessibilidade />

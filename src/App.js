@@ -10,6 +10,8 @@ import Jogos from './pages/Jogos';
 import BossBattle from './pages/BossBattle';
 import ChaoELava   from './games/ChaoELava/index';
 import DungeonQuiz from './games/DungeonQuiz/index';
+import SpaceRun    from './games/SpaceRun/index';
+import CobraSaber  from './games/CobraSaber/index';
 import LobbyJogo from './pages/LobbyJogo';
 import Layout from './components/Layout';
 
@@ -67,6 +69,8 @@ export default function App() {
           <Route path="/lobby/:jogoId"        element={<RotaPrivada><LobbyJogo /></RotaPrivada>} />
           <Route path="/jogos/chao-e-lava"  element={<RotaPrivada><ChaoELava /></RotaPrivada>} />
           <Route path="/jogos/dungeon-quiz" element={<RotaPrivada><DungeonQuiz /></RotaPrivada>} />
+          <Route path="/jogos/space-run"    element={<RotaPrivada><SpaceRun /></RotaPrivada>} />
+          <Route path="/jogos/cobra-saber"  element={<RotaPrivada><CobraSaber /></RotaPrivada>} />
 
           <Route path="/dashboard" element={<Navigate to="/jogos" />} />
           <Route path="/chat"      element={<Navigate to="/jogos" />} />

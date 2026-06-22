@@ -24,3 +24,20 @@ html.alto-contraste img,
 html.alto-contraste video {
   filter: contrast(1.1); /* evita imagens muito escuras */
 }
+
+/* Wallpapers escuros: clareia textos que ficam direto sobre o fundo,
+   mantendo escuros os textos dentro de cards brancos (maior especificidade). */
+.wallpaper-escuro .text-gray-900 { color: #f8fafc; }
+.wallpaper-escuro .text-gray-800 { color: #e2e8f0; }
+.wallpaper-escuro .text-gray-700 { color: #cbd5e1; }
+.wallpaper-escuro .text-gray-500 { color: #cbd5e1; }
+.wallpaper-escuro .text-gray-400 { color: #94a3b8; }
+.wallpaper-escuro .text-gray-300 { color: #64748b; }
+
+.wallpaper-escuro .bg-white .text-gray-900,
+.wallpaper-escuro .bg-violet-50 .text-gray-900 { color: #111827; }
+.wallpaper-escuro .bg-white .text-gray-800 { color: #1f2937; }
+.wallpaper-escuro .bg-white .text-gray-700 { color: #374151; }
+.wallpaper-escuro .bg-white .text-gray-500 { color: #6b7280; }
+.wallpaper-escuro .bg-white .text-gray-400 { color: #9ca3af; }
+.wallpaper-escuro .bg-white .text-gray-300 { color: #d1d5db; }

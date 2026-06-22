@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth, calcularMembro } from '../context/AuthContext';
+import { getWallpaper, WALLPAPER_EVENT } from '../wallpapers';
 import LogoMarca from './LogoMarca';
 
 const NAV = [
@@ -14,8 +15,16 @@ export default function Layout({ children }) {
   const xpTotal = usuario?.xpTotal || usuario?.xp || 0;
   const { membro } = calcularMembro(xpTotal);
 
+  const [wallpaper, setWp] = useState(getWallpaper);
+  useEffect(() => {
+    const onChange = () => setWp(getWallpaper());
+    window.addEventListener(WALLPAPER_EVENT, onChange);
+    return () => window.removeEventListener(WALLPAPER_EVENT, onChange);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className={`min-h-screen flex ${wallpaper.escuro ? 'wallpaper-escuro' : ''}`}
+      style={{ background: wallpaper.css, backgroundAttachment: 'fixed' }}>
 
       {/* ── Sidebar desktop (lg+) ── */}
       <aside className="hidden lg:flex flex-col w-60 min-h-screen bg-white border-r border-gray-100 fixed top-0 left-0 z-20">

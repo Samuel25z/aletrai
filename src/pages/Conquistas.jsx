@@ -192,6 +192,58 @@ const CONQUISTAS = [
     },
   },
 
+  // ── Space Run ──
+  {
+    id: 'sr_decolagem',
+    cat: 'space-run',
+    nome: 'Decolagem',
+    desc: 'Jogue Space Run pela primeira vez',
+    emoji: '🚀',
+    check: () => parseInt(localStorage.getItem('aletrai_spacerun_recorde') || '0', 10) > 0,
+  },
+  {
+    id: 'sr_piloto',
+    cat: 'space-run',
+    nome: 'Piloto Espacial',
+    desc: 'Faça 300 pontos em uma partida',
+    emoji: '🛸',
+    check: () => parseInt(localStorage.getItem('aletrai_spacerun_recorde') || '0', 10) >= 300,
+  },
+  {
+    id: 'sr_ace',
+    cat: 'space-run',
+    nome: 'Ás das Estrelas',
+    desc: 'Faça 800 pontos em uma partida',
+    emoji: '🌠',
+    check: () => parseInt(localStorage.getItem('aletrai_spacerun_recorde') || '0', 10) >= 800,
+  },
+
+  // ── Cobra do Saber ──
+  {
+    id: 'cs_mordida',
+    cat: 'cobra-saber',
+    nome: 'Primeira Mordida',
+    desc: 'Jogue Cobra do Saber pela primeira vez',
+    emoji: '🐍',
+    check: () => parseInt(localStorage.getItem('aletrai_cobra_recorde') || '0', 10) > 0,
+  },
+  {
+    id: 'cs_crescida',
+    cat: 'cobra-saber',
+    nome: 'Cobra Crescida',
+    desc: 'Faça 500 pontos em uma partida',
+    emoji: '🟢',
+    check: () => parseInt(localStorage.getItem('aletrai_cobra_recorde') || '0', 10) >= 500,
+  },
+  {
+    id: 'cs_sabia',
+    cat: 'cobra-saber',
+    nome: 'Sábia Serpente',
+    desc: 'Faça 1200 pontos em uma partida',
+    emoji: '🧠',
+    check: () => parseInt(localStorage.getItem('aletrai_cobra_recorde') || '0', 10) >= 1200,
+  },
+
   // ── Gerais ──
   {
     id: 'geral_conta',
@@ -243,6 +295,8 @@ const CATS = [
   { id: 'geral',        label: 'Geral',        cor: '#0ea5e9', banner: null },
   { id: 'chao-e-lava',  label: 'Chão é Lava',  cor: '#f97316', banner: '/banners/chao-e-lava.jpg' },
   { id: 'dungeon-quiz', label: 'Dungeon Quiz',  cor: '#7c3aed', banner: '/banners/Dungeon.jpg' },
+  { id: 'space-run',    label: 'Space Run',    cor: '#0ea5e9', banner: null },
+  { id: 'cobra-saber',  label: 'Cobra do Saber', cor: '#22c55e', banner: null },
 ];
 
 // ── Componente ────────────────────────────────────────────────────────────────
