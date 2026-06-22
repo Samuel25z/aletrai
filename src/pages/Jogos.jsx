@@ -117,19 +117,79 @@ function MorcegosEfeito() {
   );
 }
 
+// ── Nave igual à do Space Run (replica drawNave do jogo) ────────────────────
+function NaveSVG({ size = 46 }) {
+  return (
+    <svg width={size} height={size * 0.6} viewBox="-40 -24 80 48" style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id="naveFlame" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ff5000" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#ff8a00" />
+          <stop offset="1" stopColor="#ffe066" />
+        </linearGradient>
+      </defs>
+      <polygon points="-22,-7 -38,0 -22,7" fill="url(#naveFlame)" />
+      <polygon points="26,0 -18,-13 -12,0 -18,13" fill="#cbd5e1" />
+      <polygon points="-4,-10 -20,-22 -14,-7" fill="#7c3aed" />
+      <polygon points="-4,10 -20,22 -14,7" fill="#7c3aed" />
+      <ellipse cx="6" cy="0" rx="8" ry="5" fill="#38bdf8" />
+      <ellipse cx="8" cy="-1" rx="3" ry="2" fill="#e0f2fe" />
+    </svg>
+  );
+}
+
+// ── Asteroide igual ao do jogo (replica drawAsteroide) ──────────────────────
+function AsteroideSVG({ size = 24 }) {
+  return (
+    <svg width={size} height={size} viewBox="-20 -20 40 40" style={{ display: 'block' }}>
+      <polygon points="16,2 11,12 2,16 -9,13 -16,3 -12,-9 -2,-16 10,-11"
+        fill="#6b7280" stroke="#9ca3af" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="-4" cy="-3" r="3.6" fill="#4b5563" />
+      <circle cx="5" cy="4" r="2.6" fill="#4b5563" />
+    </svg>
+  );
+}
+
+// ── Cobra igual à do jogo (replica drawCobra) ───────────────────────────────
+function CobraSVG({ size = 30 }) {
+  const n = 6;
+  const segs = [];
+  for (let i = 0; i < n; i++) {
+    const x = 116 - i * 18;
+    const head = i === 0;
+    const r = head ? 15 : 12;
+    const fill = head ? '#16a34a' : (i % 2 === 0 ? '#22c55e' : '#4ade80');
+    segs.push({ x, r, fill, head });
+  }
+  return (
+    <svg height={size} width={size * (132 / 34)} viewBox="0 0 132 34"
+      style={{ display: 'block', overflow: 'visible' }}>
+      {segs.slice().reverse().map((s, i) => (
+        <rect key={i} x={s.x - s.r} y={17 - s.r} width={s.r * 2} height={s.r * 2}
+          rx={s.head ? 7 : 5} fill={s.fill} />
+      ))}
+      {/* olhos na cabeça (à direita), olhando pra frente */}
+      <circle cx="121" cy="12" r="3" fill="#fff" />
+      <circle cx="121" cy="22" r="3" fill="#fff" />
+      <circle cx="123" cy="12" r="1.4" fill="#0f172a" />
+      <circle cx="123" cy="22" r="1.4" fill="#0f172a" />
+    </svg>
+  );
+}
+
 // ── Space Run: cena espacial estilo Star Wars ──────────────────────────────
 const ASTEROIDES = [
-  { top: 18,  dur: 2.4, size: 26, delay: 0,    spin: 160 },
-  { top: 70,  dur: 3.1, size: 16, delay: 0.8,  spin: -120 },
-  { top: 110, dur: 2.0, size: 34, delay: 0.3,  spin: 90 },
-  { top: 45,  dur: 2.8, size: 13, delay: 1.4,  spin: 200 },
-  { top: 95,  dur: 3.4, size: 20, delay: 0.6,  spin: -150 },
+  { top: 18,  dur: 2.4, size: 26, delay: 0   },
+  { top: 78,  dur: 3.1, size: 16, delay: 0.8 },
+  { top: 108, dur: 2.0, size: 34, delay: 0.3 },
+  { top: 40,  dur: 2.8, size: 13, delay: 1.4 },
+  { top: 95,  dur: 3.4, size: 20, delay: 0.6 },
 ];
 const STREAKS = [22, 40, 58, 78, 100, 120];
 const LASERS = [
-  { top: 52, dur: 0.7, delay: 0.0, cor: '#ff3b3b' },
-  { top: 60, dur: 0.7, delay: 0.35, cor: '#3bff6b' },
-  { top: 56, dur: 0.7, delay: 0.7, cor: '#ff3b3b' },
+  { top: 56, dur: 0.7, delay: 0.0,  cor: '#ff3b3b' },
+  { top: 62, dur: 0.7, delay: 0.35, cor: '#3bff6b' },
+  { top: 59, dur: 0.7, delay: 0.7,  cor: '#ff3b3b' },
 ];
 
 function EspacoEfeito() {
@@ -137,10 +197,10 @@ function EspacoEfeito() {
     <>
       <style>{`
         @keyframes esTravessia { from { left: 108%; } to { left: -18%; } }
-        @keyframes esNave { 0% { left: -20%; transform: translateY(0) rotate(45deg); }
-                            50% { transform: translateY(-6px) rotate(45deg); }
-                            100% { left: 108%; transform: translateY(0) rotate(45deg); } }
-        @keyframes esLaser { from { left: 22%; opacity: 1; } to { left: 115%; opacity: 0.2; } }
+        @keyframes esNave { 0% { left: -18%; transform: translateY(0); }
+                            50% { transform: translateY(-6px); }
+                            100% { left: 108%; transform: translateY(0); } }
+        @keyframes esLaser { from { left: 24%; opacity: 1; } to { left: 115%; opacity: 0.2; } }
         @keyframes esStreak { from { transform: translateX(0); opacity: 0; }
                               20% { opacity: 1; } to { transform: translateX(-130px); opacity: 0; } }
         @keyframes esBoom { 0%,100% { transform: scale(0.2); opacity: 0; }
@@ -156,62 +216,71 @@ function EspacoEfeito() {
           zIndex: 8,
         }} />
       ))}
-      {/* asteroides */}
+      {/* asteroides girando */}
       {ASTEROIDES.map((a, i) => (
         <span key={`as-${i}`} style={{
-          position: 'absolute', top: a.top, left: '108%', fontSize: a.size,
+          position: 'absolute', top: a.top, left: '108%',
           animation: `esTravessia ${a.dur}s ${-a.delay}s infinite linear`,
-          filter: 'grayscale(0.4) drop-shadow(0 0 3px rgba(0,0,0,0.5))',
-          zIndex: 9,
-          display: 'inline-block',
+          filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.5))', zIndex: 9,
         }}>
-          <span style={{ display: 'inline-block', animation: `esSpin ${a.dur}s linear infinite` }}>🪨</span>
+          <span style={{ display: 'inline-block', animation: `esSpin ${a.dur}s linear infinite` }}>
+            <AsteroideSVG size={a.size} />
+          </span>
         </span>
       ))}
-      {/* nave atravessando */}
+      {/* nave do jogo atravessando */}
       <span style={{
-        position: 'absolute', top: 48, left: '-20%', fontSize: 30,
+        position: 'absolute', top: 50, left: '-18%',
         animation: 'esNave 3.2s 0s infinite ease-in-out',
         filter: 'drop-shadow(0 0 6px rgba(120,180,255,0.9))', zIndex: 12,
-      }}>🚀</span>
-      {/* tiros de blaster */}
+      }}>
+        <NaveSVG size={48} />
+      </span>
+      {/* tiros de blaster saindo da nave */}
       {LASERS.map((l, i) => (
         <span key={`la-${i}`} style={{
-          position: 'absolute', top: l.top, left: '22%', width: 26, height: 3, borderRadius: 2,
+          position: 'absolute', top: l.top, left: '24%', width: 26, height: 3, borderRadius: 2,
           background: `linear-gradient(90deg, transparent, ${l.cor})`,
           boxShadow: `0 0 8px ${l.cor}`,
           animation: `esLaser ${l.dur}s ${l.delay}s infinite linear`, zIndex: 11,
         }} />
       ))}
-      {/* explosão */}
+      {/* explosão (asteroide destruído) */}
       <span style={{
-        position: 'absolute', top: 70, left: '74%', fontSize: 28,
+        position: 'absolute', top: 62, left: '74%',
         animation: 'esBoom 1.6s 0.4s infinite ease-out', zIndex: 11,
-      }}>💥</span>
+      }}>
+        <svg width="34" height="34" viewBox="-20 -20 40 40" style={{ display: 'block' }}>
+          <polygon points="0,-19 5,-6 18,-7 8,2 13,15 0,7 -13,15 -8,2 -18,-7 -5,-6"
+            fill="#ff8a00" />
+          <circle cx="0" cy="0" r="6" fill="#ffe066" />
+        </svg>
+      </span>
     </>
   );
 }
 
-// ── Cobra do Saber: cobra correndo atrás das bolinhas coloridas ─────────────
+// ── Cobra do Saber: cobra correndo ATRÁS das bolinhas coloridas ─────────────
+// A cobra fica atrás (menos avançada) e persegue as bolinhas que vão na frente.
 const BOLINHAS = [
-  { cor: '#0ea5e9', delay: 0.0,  off: 0 },
-  { cor: '#f59e0b', delay: 0.12, off: 14 },
-  { cor: '#a855f7', delay: 0.24, off: 28 },
-  { cor: '#ec4899', delay: 0.36, off: 42 },
+  { cor: '#0ea5e9', delay: 0.81 },
+  { cor: '#f59e0b', delay: 0.69 },
+  { cor: '#a855f7', delay: 0.57 },
+  { cor: '#ec4899', delay: 0.45 },
 ];
 
 function CobraEfeito() {
   return (
     <>
       <style>{`
-        @keyframes cbCorrer { from { left: -16%; } to { left: 112%; } }
-        @keyframes cbSerpentear { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+        @keyframes cbCorrer { from { left: -22%; } to { left: 116%; } }
+        @keyframes cbSerpentear { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
       `}</style>
-      {/* bolinhas coloridas fugindo */}
+      {/* bolinhas coloridas na frente (fugindo) */}
       {BOLINHAS.map((b, i) => (
         <span key={`bo-${i}`} style={{
-          position: 'absolute', top: 70, left: '-16%',
-          animation: `cbCorrer 2.6s ${-b.delay}s infinite linear`, zIndex: 9,
+          position: 'absolute', top: 64, left: '-22%',
+          animation: `cbCorrer 3s -${b.delay}s infinite linear`, zIndex: 9,
         }}>
           <span style={{
             display: 'inline-block', width: 14, height: 14, borderRadius: '50%',
@@ -220,13 +289,15 @@ function CobraEfeito() {
           }} />
         </span>
       ))}
-      {/* cobra perseguindo */}
+      {/* cobra do jogo logo atrás, perseguindo */}
       <span style={{
-        position: 'absolute', top: 58, left: '-16%', fontSize: 32,
-        animation: 'cbCorrer 2.6s -0.55s infinite linear', zIndex: 10,
+        position: 'absolute', top: 54, left: '-22%',
+        animation: 'cbCorrer 3s -0.2s infinite linear', zIndex: 10,
         filter: 'drop-shadow(0 0 5px rgba(34,197,94,0.8))',
       }}>
-        <span style={{ display: 'inline-block', animation: 'cbSerpentear 0.7s 0.4s infinite ease-in-out' }}>🐍</span>
+        <span style={{ display: 'inline-block', animation: 'cbSerpentear 0.7s 0.35s infinite ease-in-out' }}>
+          <CobraSVG size={30} />
+        </span>
       </span>
     </>
   );
