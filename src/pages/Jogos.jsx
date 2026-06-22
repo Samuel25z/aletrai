@@ -150,33 +150,6 @@ function AsteroideSVG({ size = 24 }) {
   );
 }
 
-// ── Cobra igual à do jogo (replica drawCobra) ───────────────────────────────
-function CobraSVG({ size = 30 }) {
-  const n = 6;
-  const segs = [];
-  for (let i = 0; i < n; i++) {
-    const x = 116 - i * 18;
-    const head = i === 0;
-    const r = head ? 15 : 12;
-    const fill = head ? '#16a34a' : (i % 2 === 0 ? '#22c55e' : '#4ade80');
-    segs.push({ x, r, fill, head });
-  }
-  return (
-    <svg height={size} width={size * (132 / 34)} viewBox="0 0 132 34"
-      style={{ display: 'block', overflow: 'visible' }}>
-      {segs.slice().reverse().map((s, i) => (
-        <rect key={i} x={s.x - s.r} y={17 - s.r} width={s.r * 2} height={s.r * 2}
-          rx={s.head ? 7 : 5} fill={s.fill} />
-      ))}
-      {/* olhos na cabeça (à direita), olhando pra frente */}
-      <circle cx="121" cy="12" r="3" fill="#fff" />
-      <circle cx="121" cy="22" r="3" fill="#fff" />
-      <circle cx="123" cy="12" r="1.4" fill="#0f172a" />
-      <circle cx="123" cy="22" r="1.4" fill="#0f172a" />
-    </svg>
-  );
-}
-
 // ── Space Run: cena espacial estilo Star Wars ──────────────────────────────
 const ASTEROIDES = [
   { top: 18,  dur: 2.4, size: 26, delay: 0   },
@@ -260,44 +233,75 @@ function EspacoEfeito() {
   );
 }
 
-// ── Cobra do Saber: cobra correndo ATRÁS das bolinhas coloridas ─────────────
-// A cobra fica atrás (menos avançada) e persegue as bolinhas que vão na frente.
+// ── Cobra do Saber: cobra rastejando ATRÁS das bolinhas coloridas ───────────
+// As bolinhas vão na frente; a cobra (segmentos que ondulam em onda) persegue.
 const BOLINHAS = [
-  { cor: '#0ea5e9', delay: 0.81 },
-  { cor: '#f59e0b', delay: 0.69 },
-  { cor: '#a855f7', delay: 0.57 },
-  { cor: '#ec4899', delay: 0.45 },
+  { cor: '#0ea5e9', delay: 0.92 },
+  { cor: '#f59e0b', delay: 0.82 },
+  { cor: '#a855f7', delay: 0.72 },
+  { cor: '#ec4899', delay: 0.62 },
 ];
+
+// segmentos da cobra: índice 0 = cabeça (à frente/direita), demais = corpo p/ trás
+const SEGMENTOS = Array.from({ length: 7 }, (_, i) => ({
+  d: i === 0 ? 22 : Math.max(10, 19 - i * 1.3),                 // diâmetro (afina pra cauda)
+  fill: i === 0 ? '#16a34a' : (i % 2 === 0 ? '#22c55e' : '#4ade80'),
+}));
 
 function CobraEfeito() {
   return (
     <>
       <style>{`
-        @keyframes cbCorrer { from { left: -22%; } to { left: 116%; } }
-        @keyframes cbSerpentear { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes cbCorrer { from { left: -28%; } to { left: 118%; } }
+        @keyframes cbOnda { 0%,100% { transform: translateY(-7px); } 50% { transform: translateY(7px); } }
+        @keyframes cbBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
       `}</style>
+
       {/* bolinhas coloridas na frente (fugindo) */}
       {BOLINHAS.map((b, i) => (
         <span key={`bo-${i}`} style={{
-          position: 'absolute', top: 64, left: '-22%',
-          animation: `cbCorrer 3s -${b.delay}s infinite linear`, zIndex: 9,
+          position: 'absolute', top: 66, left: '-28%',
+          animation: `cbCorrer 3.2s -${b.delay}s infinite linear`, zIndex: 9,
         }}>
           <span style={{
             display: 'inline-block', width: 14, height: 14, borderRadius: '50%',
             background: b.cor, boxShadow: `0 0 8px ${b.cor}`,
-            animation: `cbSerpentear 0.7s ${i * 0.1}s infinite ease-in-out`,
+            animation: `cbBob 0.7s ${i * 0.1}s infinite ease-in-out`,
           }} />
         </span>
       ))}
-      {/* cobra do jogo logo atrás, perseguindo */}
+
+      {/* cabeça da cobra como âncora; corpo se estende pra trás (esquerda) */}
       <span style={{
-        position: 'absolute', top: 54, left: '-22%',
-        animation: 'cbCorrer 3s -0.2s infinite linear', zIndex: 10,
-        filter: 'drop-shadow(0 0 5px rgba(34,197,94,0.8))',
+        position: 'absolute', top: 70, left: '-28%',
+        animation: 'cbCorrer 3.2s -0.18s infinite linear', zIndex: 10,
+        filter: 'drop-shadow(0 0 5px rgba(34,197,94,0.7))',
       }}>
-        <span style={{ display: 'inline-block', animation: 'cbSerpentear 0.7s 0.35s infinite ease-in-out' }}>
-          <CobraSVG size={30} />
-        </span>
+        {SEGMENTOS.map((s, i) => (
+          <span key={i} style={{
+            position: 'absolute',
+            left: -i * 13,                 // cada segmento mais pra trás
+            top: 0,
+            width: s.d, height: s.d, marginLeft: -s.d / 2, marginTop: -s.d / 2,
+            borderRadius: '50%',
+            background: s.fill,
+            zIndex: 30 - i,                // cabeça por cima
+            // onda viajante: cada segmento defasado → efeito de rastejar
+            animation: `cbOnda 0.62s ${-i * 0.08}s infinite ease-in-out`,
+          }}>
+            {i === 0 && (
+              <>
+                {/* olhos virados pra frente (direita) */}
+                <span style={{ position: 'absolute', right: 2,  top: 4,  width: 5, height: 5, borderRadius: '50%', background: '#fff' }}>
+                  <span style={{ position: 'absolute', right: 0, top: 1, width: 2.5, height: 2.5, borderRadius: '50%', background: '#0f172a' }} />
+                </span>
+                <span style={{ position: 'absolute', right: 2,  bottom: 4, width: 5, height: 5, borderRadius: '50%', background: '#fff' }}>
+                  <span style={{ position: 'absolute', right: 0, bottom: 1, width: 2.5, height: 2.5, borderRadius: '50%', background: '#0f172a' }} />
+                </span>
+              </>
+            )}
+          </span>
+        ))}
       </span>
     </>
   );
