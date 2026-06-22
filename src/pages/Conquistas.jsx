@@ -1,100 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-// ── Badges SVG por rank ──────────────────────────────────────────────────────
-
-function BadgeIniciante({ size = 64, active }) {
-  const c = active ? '#9ca3af' : '#d1d5db';
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <circle cx="32" cy="32" r="28" fill={active ? '#f3f4f6' : '#f9fafb'} stroke={c} strokeWidth="3"/>
-      <path d="M22 24l20 16M42 24L22 40" stroke={c} strokeWidth="3.5" strokeLinecap="round"/>
-      <circle cx="32" cy="32" r="4" fill={c}/>
-      {active && <circle cx="32" cy="32" r="30" stroke={c} strokeWidth="1" strokeDasharray="4 3" opacity="0.5"/>}
-    </svg>
-  );
-}
-
-function BadgeAventureiro({ size = 64, active }) {
-  const c = active ? '#16a34a' : '#d1d5db';
-  const bg = active ? '#f0fdf4' : '#f9fafb';
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <path d="M32 6L8 18v14c0 13 10 22 24 26 14-4 24-13 24-26V18L32 6z" fill={bg} stroke={c} strokeWidth="3"/>
-      <path d="M22 32l7 7 13-14" stroke={c} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {active && <path d="M32 10L12 20v12c0 10 8 18 20 22 12-4 20-12 20-22V20L32 10z" stroke={c} strokeWidth="1" opacity="0.3"/>}
-    </svg>
-  );
-}
-
-function BadgeGuerreiro({ size = 64, active }) {
-  const c = active ? '#2563eb' : '#d1d5db';
-  const bg = active ? '#eff6ff' : '#f9fafb';
-  // Estrela de 6 pontas
-  const pts = Array.from({ length: 6 }, (_, i) => {
-    const a = (i * 60 - 90) * Math.PI / 180;
-    const ai = ((i * 60 - 60) * Math.PI / 180);
-    return `${32 + 26 * Math.cos(a)},${32 + 26 * Math.sin(a)} ${32 + 13 * Math.cos(ai)},${32 + 13 * Math.sin(ai)}`;
-  }).join(' ');
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <polygon points={pts} fill={bg} stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
-      <text x="32" y="38" textAnchor="middle" fontSize="18" fontWeight="900" fill={c} fontFamily="Inter,sans-serif">G</text>
-      {active && <circle cx="32" cy="32" r="30" stroke={c} strokeWidth="1" strokeDasharray="3 3" opacity="0.4"/>}
-    </svg>
-  );
-}
-
-function BadgeMestre({ size = 64, active }) {
-  const c = active ? '#7c3aed' : '#d1d5db';
-  const bg = active ? '#f5f3ff' : '#f9fafb';
-  // Hexágono
-  const hex = Array.from({ length: 6 }, (_, i) => {
-    const a = (i * 60 - 30) * Math.PI / 180;
-    return `${32 + 27 * Math.cos(a)},${32 + 27 * Math.sin(a)}`;
-  }).join(' ');
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      <polygon points={hex} fill={bg} stroke={c} strokeWidth="3"/>
-      {/* Coroa */}
-      <path d="M20 40h24M20 40l4-12 8 6 8-6 4 12" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <circle cx="20" cy="28" r="2.5" fill={c}/>
-      <circle cx="32" cy="24" r="2.5" fill={c}/>
-      <circle cx="44" cy="28" r="2.5" fill={c}/>
-      {active && <polygon points={hex} stroke={c} strokeWidth="1" strokeDasharray="4 3" opacity="0.3" transform="scale(1.08) translate(-2.5,-2.5)"/>}
-    </svg>
-  );
-}
-
-function BadgeLendario({ size = 64, active }) {
-  const c = active ? '#d97706' : '#d1d5db';
-  const c2 = active ? '#fbbf24' : '#e5e7eb';
-  const bg = active ? '#fffbeb' : '#f9fafb';
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-      {active && <circle cx="32" cy="32" r="31" fill={c2} opacity="0.15"/>}
-      {/* Diamante */}
-      <path d="M32 8l16 14-16 34L16 22z" fill={bg} stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
-      <path d="M16 22h32" stroke={c} strokeWidth="2"/>
-      <path d="M32 8l-8 14h16z" fill={c2} opacity="0.5"/>
-      {/* Brilho */}
-      {active && <>
-        <circle cx="20" cy="14" r="2" fill={c2} opacity="0.8"/>
-        <circle cx="44" cy="18" r="1.5" fill={c2} opacity="0.6"/>
-        <circle cx="50" cy="10" r="1" fill={c2} opacity="0.7"/>
-      </>}
-    </svg>
-  );
-}
-
 // ── Definições ───────────────────────────────────────────────────────────────
 
 const RANKS = [
-  { id: 'iniciante',    nome: 'Iniciante',    xp: 0,     cor: '#9ca3af', Badge: BadgeIniciante },
-  { id: 'aventureiro',  nome: 'Aventureiro',  xp: 300,   cor: '#16a34a', Badge: BadgeAventureiro },
-  { id: 'guerreiro',    nome: 'Guerreiro',    xp: 1000,  cor: '#2563eb', Badge: BadgeGuerreiro },
-  { id: 'mestre',       nome: 'Mestre',       xp: 3000,  cor: '#7c3aed', Badge: BadgeMestre },
-  { id: 'lendario',     nome: 'Lendário',     xp: 8000,  cor: '#d97706', Badge: BadgeLendario },
+  { id: 'iniciante',    nome: 'Iniciante',    xp: 0,     cor: '#9ca3af', img: '/ranks/iniciante.png'   },
+  { id: 'aventureiro',  nome: 'Aventureiro',  xp: 300,   cor: '#16a34a', img: '/ranks/aventureiro.png' },
+  { id: 'guerreiro',    nome: 'Guerreiro',    xp: 1000,  cor: '#2563eb', img: '/ranks/guerreiro.png'   },
+  { id: 'mestre',       nome: 'Mestre',       xp: 3000,  cor: '#7c3aed', img: '/ranks/mestre.png'      },
+  { id: 'lendario',     nome: 'Lendário',     xp: 8000,  cor: '#d97706', img: '/ranks/lendario.png'    },
 ];
 
 // conquista: { id, nome, desc, emoji, check(usuario) }
@@ -365,7 +279,13 @@ export default function Conquistas() {
             return (
               <div key={r.id} className="flex flex-col items-center gap-1.5 flex-1">
                 <div className={`transition-transform ${current ? 'scale-110' : 'scale-90 opacity-60'}`}>
-                  <r.Badge size={current ? 56 : 48} active={ativo} />
+                  <img src={r.img} alt={r.nome}
+                    width={current ? 56 : 48} height={current ? 56 : 48}
+                    style={{
+                      objectFit: 'contain',
+                      filter: ativo ? 'none' : 'grayscale(1)',
+                      opacity: ativo ? 1 : 0.45,
+                    }} />
                 </div>
                 <p className={`text-xs font-bold text-center leading-tight ${current ? 'text-gray-900' : 'text-gray-400'}`}
                   style={{ fontSize: 10 }}>
