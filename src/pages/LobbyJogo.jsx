@@ -38,7 +38,7 @@ const JOGOS = {
     rota: '/jogos/cobra-saber',
     cor: '#22c55e',
     corClaro: '#f0fdf4',
-    banner: '/banners/cobra-saber.png',
+    banner: '/banners/cobra-saber.jpg',
     emoji: '🐍',
     descricao: 'arcade onde você guia a cobra até a resposta certa',
     boasVindas: 'Bem-vindo à **Cobra do Saber**! 🐍\n\nGuie a cobra pelo tabuleiro e leve-a até o orbe com a resposta certa. Acertou, ela cresce; errou ou bateu, perde uma vida!\n\nAntes de começar, me diz: **sobre qual matéria ou assunto você quer praticar hoje?**',

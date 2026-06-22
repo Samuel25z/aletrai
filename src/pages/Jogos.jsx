@@ -117,10 +117,127 @@ function MorcegosEfeito() {
   );
 }
 
+// ── Space Run: cena espacial estilo Star Wars ──────────────────────────────
+const ASTEROIDES = [
+  { top: 18,  dur: 2.4, size: 26, delay: 0,    spin: 160 },
+  { top: 70,  dur: 3.1, size: 16, delay: 0.8,  spin: -120 },
+  { top: 110, dur: 2.0, size: 34, delay: 0.3,  spin: 90 },
+  { top: 45,  dur: 2.8, size: 13, delay: 1.4,  spin: 200 },
+  { top: 95,  dur: 3.4, size: 20, delay: 0.6,  spin: -150 },
+];
+const STREAKS = [22, 40, 58, 78, 100, 120];
+const LASERS = [
+  { top: 52, dur: 0.7, delay: 0.0, cor: '#ff3b3b' },
+  { top: 60, dur: 0.7, delay: 0.35, cor: '#3bff6b' },
+  { top: 56, dur: 0.7, delay: 0.7, cor: '#ff3b3b' },
+];
+
+function EspacoEfeito() {
+  return (
+    <>
+      <style>{`
+        @keyframes esTravessia { from { left: 108%; } to { left: -18%; } }
+        @keyframes esNave { 0% { left: -20%; transform: translateY(0) rotate(45deg); }
+                            50% { transform: translateY(-6px) rotate(45deg); }
+                            100% { left: 108%; transform: translateY(0) rotate(45deg); } }
+        @keyframes esLaser { from { left: 22%; opacity: 1; } to { left: 115%; opacity: 0.2; } }
+        @keyframes esStreak { from { transform: translateX(0); opacity: 0; }
+                              20% { opacity: 1; } to { transform: translateX(-130px); opacity: 0; } }
+        @keyframes esBoom { 0%,100% { transform: scale(0.2); opacity: 0; }
+                            40% { transform: scale(1.25); opacity: 1; } 70% { transform: scale(0.9); opacity: 0.7; } }
+        @keyframes esSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
+      {/* hiperespaço — riscos de luz */}
+      {STREAKS.map((top, i) => (
+        <span key={`st-${i}`} style={{
+          position: 'absolute', top, right: `${5 + i * 14}%`, width: 30, height: 2,
+          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.9))',
+          animation: `esStreak ${0.5 + (i % 3) * 0.15}s ${i * 0.12}s infinite linear`,
+          zIndex: 8,
+        }} />
+      ))}
+      {/* asteroides */}
+      {ASTEROIDES.map((a, i) => (
+        <span key={`as-${i}`} style={{
+          position: 'absolute', top: a.top, left: '108%', fontSize: a.size,
+          animation: `esTravessia ${a.dur}s ${-a.delay}s infinite linear`,
+          filter: 'grayscale(0.4) drop-shadow(0 0 3px rgba(0,0,0,0.5))',
+          zIndex: 9,
+          display: 'inline-block',
+        }}>
+          <span style={{ display: 'inline-block', animation: `esSpin ${a.dur}s linear infinite` }}>🪨</span>
+        </span>
+      ))}
+      {/* nave atravessando */}
+      <span style={{
+        position: 'absolute', top: 48, left: '-20%', fontSize: 30,
+        animation: 'esNave 3.2s 0s infinite ease-in-out',
+        filter: 'drop-shadow(0 0 6px rgba(120,180,255,0.9))', zIndex: 12,
+      }}>🚀</span>
+      {/* tiros de blaster */}
+      {LASERS.map((l, i) => (
+        <span key={`la-${i}`} style={{
+          position: 'absolute', top: l.top, left: '22%', width: 26, height: 3, borderRadius: 2,
+          background: `linear-gradient(90deg, transparent, ${l.cor})`,
+          boxShadow: `0 0 8px ${l.cor}`,
+          animation: `esLaser ${l.dur}s ${l.delay}s infinite linear`, zIndex: 11,
+        }} />
+      ))}
+      {/* explosão */}
+      <span style={{
+        position: 'absolute', top: 70, left: '74%', fontSize: 28,
+        animation: 'esBoom 1.6s 0.4s infinite ease-out', zIndex: 11,
+      }}>💥</span>
+    </>
+  );
+}
+
+// ── Cobra do Saber: cobra correndo atrás das bolinhas coloridas ─────────────
+const BOLINHAS = [
+  { cor: '#0ea5e9', delay: 0.0,  off: 0 },
+  { cor: '#f59e0b', delay: 0.12, off: 14 },
+  { cor: '#a855f7', delay: 0.24, off: 28 },
+  { cor: '#ec4899', delay: 0.36, off: 42 },
+];
+
+function CobraEfeito() {
+  return (
+    <>
+      <style>{`
+        @keyframes cbCorrer { from { left: -16%; } to { left: 112%; } }
+        @keyframes cbSerpentear { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+      `}</style>
+      {/* bolinhas coloridas fugindo */}
+      {BOLINHAS.map((b, i) => (
+        <span key={`bo-${i}`} style={{
+          position: 'absolute', top: 70, left: '-16%',
+          animation: `cbCorrer 2.6s ${-b.delay}s infinite linear`, zIndex: 9,
+        }}>
+          <span style={{
+            display: 'inline-block', width: 14, height: 14, borderRadius: '50%',
+            background: b.cor, boxShadow: `0 0 8px ${b.cor}`,
+            animation: `cbSerpentear 0.7s ${i * 0.1}s infinite ease-in-out`,
+          }} />
+        </span>
+      ))}
+      {/* cobra perseguindo */}
+      <span style={{
+        position: 'absolute', top: 58, left: '-16%', fontSize: 32,
+        animation: 'cbCorrer 2.6s -0.55s infinite linear', zIndex: 10,
+        filter: 'drop-shadow(0 0 5px rgba(34,197,94,0.8))',
+      }}>
+        <span style={{ display: 'inline-block', animation: 'cbSerpentear 0.7s 0.4s infinite ease-in-out' }}>🐍</span>
+      </span>
+    </>
+  );
+}
+
 function CardJogo({ jogo, onClick }) {
   const [hovered, setHovered] = useState(false);
   const isLava    = jogo.id === 'chao-e-lava';
   const isDungeon = jogo.id === 'dungeon-quiz';
+  const isSpace   = jogo.id === 'space-run';
+  const isCobra   = jogo.id === 'cobra-saber';
 
   return (
     <div className="relative"
@@ -134,6 +251,8 @@ function CardJogo({ jogo, onClick }) {
         style={{
           boxShadow: isLava && hovered    ? '0 0 24px rgba(255,100,0,0.4)'
                    : isDungeon && hovered ? '0 0 24px rgba(124,58,237,0.45)'
+                   : isSpace && hovered   ? '0 0 24px rgba(14,165,233,0.45)'
+                   : isCobra && hovered   ? '0 0 24px rgba(34,197,94,0.45)'
                    : '',
         }}>
 
@@ -148,8 +267,10 @@ function CardJogo({ jogo, onClick }) {
             </div>
           )}
 
-          {/* Morcegos — dentro do overflow hidden */}
+          {/* Efeitos de hover — dentro do overflow hidden */}
           {isDungeon && hovered && <MorcegosEfeito />}
+          {isSpace   && hovered && <EspacoEfeito />}
+          {isCobra   && hovered && <CobraEfeito />}
 
           {/* Overlay + botão play */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all duration-300 flex items-center justify-center">
@@ -216,7 +337,7 @@ const JOGOS = [
     cor: '#22c55e',
     bg: '#f0fdf4',
     emoji: '🐍',
-    banner: '/banners/cobra-saber.png',
+    banner: '/banners/cobra-saber.jpg',
   },
 ];
 
