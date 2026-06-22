@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
     if (usuarios.find(u => u.email === email)) return { erro: 'E-mail já cadastrado.' };
     const senhaHash = await hashSenha(senha);
     const novo = {
-      id: Date.now(), nome, email, senhaHash, avatar: '🎓',
+      id: Date.now(), nome, email, senhaHash, avatar: 'maga',
       nivel: 1, xp: 0, xpTotal: 0, xpProximo: 300,
       sequencia: 0, desafiosConcluidos: 0, medalhas: [],
       xpPorMateria: {},

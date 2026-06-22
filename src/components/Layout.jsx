@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth, calcularMembro } from '../context/AuthContext';
 import { getWallpaper, WALLPAPER_EVENT } from '../wallpapers';
+import { getAvatarSrc } from '../avatares';
 import LogoMarca from './LogoMarca';
 
 const NAV = [
@@ -64,8 +65,8 @@ export default function Layout({ children }) {
         <div className="px-4 py-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl">
             <div className="w-9 h-9 rounded-full bg-violet-100 overflow-hidden flex items-center justify-center text-base">
-              {usuario?.avatar && !usuario.avatar.includes('/')
-                ? <img src={`/avatares/${usuario.avatar}.svg`} alt="avatar" className="w-full h-full object-cover" />
+              {getAvatarSrc(usuario?.avatar)
+                ? <img src={getAvatarSrc(usuario.avatar)} alt="avatar" className="w-full h-full object-cover" />
                 : <span>{usuario?.avatar || '🎓'}</span>
               }
             </div>

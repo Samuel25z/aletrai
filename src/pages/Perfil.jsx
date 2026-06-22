@@ -2,21 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { WALLPAPERS, getWallpaperId, setWallpaper, wallpaperDesbloqueado } from '../wallpapers';
-
-const avatares = [
-  { id: 'mago',       label: 'Mago',       src: '/avatares/mago.svg'       },
-  { id: 'ninja',      label: 'Ninja',      src: '/avatares/ninja.svg'      },
-  { id: 'astronauta', label: 'Astronauta', src: '/avatares/astronauta.svg' },
-  { id: 'robo',       label: 'Robô',       src: '/avatares/robo.svg'       },
-  { id: 'guerreiro',  label: 'Guerreiro',  src: '/avatares/guerreiro.svg'  },
-  { id: 'cientista',  label: 'Cientista',  src: '/avatares/cientista.svg'  },
-  { id: 'hacker',     label: 'Hacker',     src: '/avatares/hacker.svg'     },
-  { id: 'pirata',     label: 'Pirata',     src: '/avatares/pirata.svg'     },
-  { id: 'elfa',       label: 'Elfa',       src: '/avatares/elfa.svg'       },
-  { id: 'vampiro',    label: 'Vampiro',    src: '/avatares/vampiro.svg'    },
-  { id: 'druida',     label: 'Druida',     src: '/avatares/druida.svg'     },
-  { id: 'explorador', label: 'Explorador', src: '/avatares/explorador.svg' },
-];
+import { AVATARES as avatares } from '../avatares';
 
 function Toggle({ ativo, onChange }) {
   return (
@@ -345,10 +331,8 @@ export default function Perfil() {
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-16 h-16 bg-white/20 border-2 border-white/30 rounded-full overflow-hidden flex items-center justify-center">
             {(() => {
-              const av = avatares.find(a => a.id === usuario.avatar);
-              return av
-                ? <img src={av.src} alt={av.label} className="w-full h-full object-cover" />
-                : <span className="text-4xl">{usuario.avatar}</span>;
+              const av = avatares.find(a => a.id === usuario.avatar) || avatares[0];
+              return <img src={av.src} alt={av.label} className="w-full h-full object-cover" />;
             })()}
           </div>
           <div>
