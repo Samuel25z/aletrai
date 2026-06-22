@@ -1,0 +1,375 @@
+/* ════════════════════════════════════════════════════
+   LOBBY JOGO — Temas por jogo com pixel art
+   ════════════════════════════════════════════════════ */
+
+.lobby-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Decorações de fundo ─────────────────────────────── */
+.lobby-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Chat area fica acima das decorações ─────────────── */
+.lobby-chat-area,
+.lobby-input-bar,
+.lobby-root > .relative {
+  position: relative;
+  z-index: 1;
+}
+
+/* ════════════════════════════════════════════════════
+   TEMA: LAVA (Chão é Lava)
+   ════════════════════════════════════════════════════ */
+.lobby-lava {
+  background: linear-gradient(180deg, #1c0a00 0%, #3b0d00 60%, #7c1d06 100%);
+}
+
+.lava-deco {
+  overflow: hidden;
+}
+
+.lava-chama {
+  position: absolute;
+  bottom: 0;
+  animation: chamaSubir 1.8s ease-in-out infinite alternate;
+  opacity: 0.6;
+}
+@keyframes chamaSubir {
+  from { transform: translateY(0) scaleY(1); opacity: 0.5; }
+  to   { transform: translateY(-18px) scaleY(1.2); opacity: 0.9; }
+}
+
+.lava-rio {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(90deg, #dc2626, #f97316, #dc2626, #b91c1c, #f97316);
+  background-size: 200% 100%;
+  animation: lavaFluir 3s linear infinite;
+  opacity: 0.35;
+  border-radius: 50% 50% 0 0;
+}
+@keyframes lavaFluir {
+  from { background-position: 0% 0%; }
+  to   { background-position: 200% 0%; }
+}
+
+/* bolhas lava */
+.lobby-bolha-lava {
+  background: rgba(60, 15, 0, 0.85);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 0 16px 16px 16px;
+  padding: 12px 16px;
+  color: #fed7aa;
+}
+.lobby-bolha-lava strong { color: #fb923c; }
+
+.lobby-bolha-user-lava {
+  background: linear-gradient(135deg, #c2410c, #ea580c);
+  color: #fff;
+  border-radius: 16px 16px 0 16px;
+  padding: 12px 16px;
+}
+
+.lobby-avatar-lava {
+  width: 36px; height: 36px;
+  background: rgba(220, 38, 38, 0.3);
+  border: 2px solid #f97316;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
+
+.lobby-input-lava {
+  background: rgba(28, 10, 0, 0.9);
+  border-top: 1px solid rgba(249, 115, 22, 0.2);
+}
+.lobby-input-field-lava {
+  background: rgba(60, 15, 0, 0.8);
+  color: #fed7aa;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+.lobby-input-field-lava::placeholder { color: rgba(251, 146, 60, 0.4); }
+.lobby-input-field-lava:focus { border-color: rgba(249, 115, 22, 0.6); box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15); }
+
+.lobby-send-lava { background: linear-gradient(135deg, #dc2626, #f97316); }
+.lobby-btn-lava  { background: linear-gradient(135deg, #dc2626, #f97316); box-shadow: 0 8px 24px rgba(249, 115, 22, 0.45); }
+
+/* ════════════════════════════════════════════════════
+   TEMA: DUNGEON (Dungeon Quiz)
+   ════════════════════════════════════════════════════ */
+.lobby-dungeon {
+  background: linear-gradient(180deg, #0f0a1a 0%, #1e1030 60%, #2d1a4a 100%);
+}
+
+.dungeon-deco { overflow: hidden; }
+
+.dungeon-tocha {
+  position: absolute;
+  top: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tocha-0 { left: 12px; }
+.tocha-1 { right: 12px; }
+
+.tocha-brilho {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, transparent 70%);
+  animation: torchFlicker 0.8s ease-in-out infinite alternate;
+  margin-top: -20px;
+}
+@keyframes torchFlicker {
+  from { opacity: 0.5; transform: scale(0.9); }
+  to   { opacity: 1;   transform: scale(1.15); }
+}
+
+.dungeon-pedras { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; }
+.pedra {
+  position: absolute;
+  width: 32px; height: 20px;
+  background: #1e1b4b;
+  border: 1px solid #312e81;
+  border-radius: 4px 4px 0 0;
+}
+
+/* bolhas dungeon */
+.lobby-bolha-dungeon {
+  background: rgba(15, 10, 26, 0.9);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 0 16px 16px 16px;
+  padding: 12px 16px;
+  color: #ddd6fe;
+  box-shadow: 0 2px 12px rgba(109, 40, 217, 0.15);
+}
+.lobby-bolha-dungeon strong { color: #a78bfa; }
+
+.lobby-bolha-user-dungeon {
+  background: linear-gradient(135deg, #5b21b6, #7c3aed);
+  color: #fff;
+  border-radius: 16px 16px 0 16px;
+  padding: 12px 16px;
+}
+
+.lobby-avatar-dungeon {
+  width: 36px; height: 36px;
+  background: rgba(91, 33, 182, 0.3);
+  border: 2px solid #7c3aed;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+  animation: avatarPulse 2s ease-in-out infinite;
+}
+@keyframes avatarPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+  50%      { box-shadow: 0 0 18px rgba(139, 92, 246, 0.8); }
+}
+
+.lobby-input-dungeon {
+  background: rgba(15, 10, 26, 0.95);
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
+}
+.lobby-input-field-dungeon {
+  background: rgba(30, 16, 48, 0.85);
+  color: #ddd6fe;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+.lobby-input-field-dungeon::placeholder { color: rgba(167, 139, 250, 0.4); }
+.lobby-input-field-dungeon:focus { border-color: rgba(139, 92, 246, 0.6); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15); }
+
+.lobby-send-dungeon { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+.lobby-btn-dungeon  { background: linear-gradient(135deg, #4c1d95, #7c3aed); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45); }
+
+/* ════════════════════════════════════════════════════
+   TEMA: SPACE (Space Run)
+   ════════════════════════════════════════════════════ */
+.lobby-space {
+  background: linear-gradient(180deg, #020617 0%, #0c1a35 60%, #0f2347 100%);
+}
+
+.space-deco { overflow: hidden; }
+
+.estrela {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: piscar ease-in-out infinite alternate;
+}
+@keyframes piscar {
+  from { opacity: 0.2; transform: scale(0.8); }
+  to   { opacity: 1;   transform: scale(1.2); }
+}
+
+.planeta {
+  position: absolute;
+  right: -16px;
+  top: 15%;
+  opacity: 0.4;
+  animation: planetaFlutuar 6s ease-in-out infinite alternate;
+}
+@keyframes planetaFlutuar {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-12px); }
+}
+
+/* bolhas space */
+.lobby-bolha-space {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 0 16px 16px 16px;
+  padding: 12px 16px;
+  color: #bae6fd;
+  box-shadow: 0 2px 12px rgba(14, 165, 233, 0.1);
+}
+.lobby-bolha-space strong { color: #38bdf8; }
+
+.lobby-bolha-user-space {
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
+  color: #fff;
+  border-radius: 16px 16px 0 16px;
+  padding: 12px 16px;
+}
+
+.lobby-avatar-space {
+  width: 36px; height: 36px;
+  background: rgba(14, 165, 233, 0.15);
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  animation: naveFlutuar 2s ease-in-out infinite alternate;
+}
+@keyframes naveFlutuar {
+  from { transform: translateY(0); box-shadow: 0 0 8px rgba(14, 165, 233, 0.4); }
+  to   { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(14, 165, 233, 0.7); }
+}
+
+.lobby-input-space {
+  background: rgba(2, 6, 23, 0.95);
+  border-top: 1px solid rgba(14, 165, 233, 0.2);
+}
+.lobby-input-field-space {
+  background: rgba(12, 26, 53, 0.85);
+  color: #bae6fd;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+.lobby-input-field-space::placeholder { color: rgba(56, 189, 248, 0.4); }
+.lobby-input-field-space:focus { border-color: rgba(14, 165, 233, 0.6); box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15); }
+
+.lobby-send-space { background: linear-gradient(135deg, #0369a1, #0ea5e9); }
+.lobby-btn-space  { background: linear-gradient(135deg, #0c4a6e, #0ea5e9); box-shadow: 0 8px 24px rgba(14, 165, 233, 0.45); }
+
+/* ════════════════════════════════════════════════════
+   TEMA: COBRA (Cobra do Saber)
+   ════════════════════════════════════════════════════ */
+.lobby-cobra {
+  background: linear-gradient(180deg, #052e16 0%, #14532d 60%, #166534 100%);
+}
+
+.cobra-deco { overflow: hidden; }
+
+.cobra-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+  padding: 8px;
+}
+.grid-cell {
+  background: #22c55e;
+  border-radius: 2px;
+}
+
+.orbe-deco {
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  bottom: 20%;
+  opacity: 0.5;
+  animation: orbeFlutuar 2s ease-in-out infinite alternate;
+}
+@keyframes orbeFlutuar {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(-10px) scale(1.15); }
+}
+
+/* bolhas cobra */
+.lobby-bolha-cobra {
+  background: rgba(5, 46, 22, 0.9);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0 16px 16px 16px;
+  padding: 12px 16px;
+  color: #bbf7d0;
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.1);
+}
+.lobby-bolha-cobra strong { color: #4ade80; }
+
+.lobby-bolha-user-cobra {
+  background: linear-gradient(135deg, #15803d, #22c55e);
+  color: #fff;
+  border-radius: 16px 16px 0 16px;
+  padding: 12px 16px;
+}
+
+.lobby-avatar-cobra {
+  width: 36px; height: 36px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 2px solid #22c55e;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  animation: cobraOnda 1.5s ease-in-out infinite alternate;
+}
+@keyframes cobraOnda {
+  from { transform: translateX(0); box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+  to   { transform: translateX(3px); box-shadow: 0 0 16px rgba(34, 197, 94, 0.7); }
+}
+
+.lobby-input-cobra {
+  background: rgba(5, 46, 22, 0.95);
+  border-top: 1px solid rgba(34, 197, 94, 0.2);
+}
+.lobby-input-field-cobra {
+  background: rgba(20, 83, 45, 0.8);
+  color: #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+.lobby-input-field-cobra::placeholder { color: rgba(74, 222, 128, 0.4); }
+.lobby-input-field-cobra:focus { border-color: rgba(34, 197, 94, 0.6); box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15); }
+
+.lobby-send-cobra { background: linear-gradient(135deg, #15803d, #22c55e); }
+.lobby-btn-cobra  { background: linear-gradient(135deg, #166534, #22c55e); box-shadow: 0 8px 24px rgba(34, 197, 94, 0.45); }
+
+/* ════════════════════════════════════════════════════
+   Dots de digitando (compartilhado)
+   ════════════════════════════════════════════════════ */
+.lobby-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  animation: dotBounce 0.8s ease-in-out infinite alternate;
+}
+.lobby-lava .lobby-dot    { color: #f97316; }
+.lobby-dungeon .lobby-dot { color: #a78bfa; }
+.lobby-space .lobby-dot   { color: #38bdf8; }
+.lobby-cobra .lobby-dot   { color: #4ade80; }
+
+@keyframes dotBounce {
+  from { transform: translateY(0); opacity: 0.3; }
+  to   { transform: translateY(-5px); opacity: 1; }
+}

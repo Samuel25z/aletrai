@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getApiKey } from '../services/anthropic';
+import './LobbyJogo.css';
 
 const JOGOS = {
   'chao-e-lava': {
     nome: 'Chão é Lava',
     rota: '/jogos/chao-e-lava',
     cor: '#f97316',
-    corClaro: '#fff7ed',
+    tema: 'lava',
     banner: '/banners/chao-e-lava.jpg',
     emoji: '🌋',
     descricao: 'jogo de sobrevivência onde cada resposta errada te aproxima da lava',
@@ -17,7 +18,7 @@ const JOGOS = {
     nome: 'Dungeon Quiz',
     rota: '/jogos/dungeon-quiz',
     cor: '#7c3aed',
-    corClaro: '#f5f3ff',
+    tema: 'dungeon',
     banner: '/banners/Dungeon.jpg',
     emoji: '⚔️',
     descricao: 'RPG onde você derrota bosses respondendo perguntas',
@@ -27,7 +28,7 @@ const JOGOS = {
     nome: 'Space Run',
     rota: '/jogos/space-run',
     cor: '#0ea5e9',
-    corClaro: '#f0f9ff',
+    tema: 'space',
     banner: '/banners/space-run.jpg',
     emoji: '🚀',
     descricao: 'endless runner espacial onde você responde perguntas para sobreviver',
@@ -37,7 +38,7 @@ const JOGOS = {
     nome: 'Cobra do Saber',
     rota: '/jogos/cobra-saber',
     cor: '#22c55e',
-    corClaro: '#f0fdf4',
+    tema: 'cobra',
     banner: '/banners/cobra-saber.jpg',
     emoji: '🐍',
     descricao: 'arcade onde você guia a cobra até a resposta certa',
@@ -52,44 +53,239 @@ function parseMarkdown(text) {
     .replace(/\n/g, '<br/>');
 }
 
-function BolhaIA({ texto, cor }) {
+// ── Pixel art avatars por tema ──────────────────────────────────────────────
+
+function AvatarLava() {
   return (
-    <div className="flex items-start gap-3 max-w-[85%]">
-      <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 shadow-sm"
-        style={{ background: cor, color: 'white', fontWeight: 'bold', fontSize: 16 }}>
-        ✦
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: 'pixelated' }}>
+      {/* corpo fogo */}
+      <rect x="6" y="12" width="4" height="3" fill="#f97316"/>
+      <rect x="5" y="10" width="6" height="3" fill="#fb923c"/>
+      <rect x="4" y="8" width="8" height="3" fill="#fbbf24"/>
+      <rect x="5" y="6" width="6" height="3" fill="#fb923c"/>
+      <rect x="6" y="4" width="4" height="3" fill="#f97316"/>
+      <rect x="7" y="2" width="2" height="3" fill="#fbbf24"/>
+      {/* olhos */}
+      <rect x="6" y="8" width="1" height="1" fill="#7c1d06"/>
+      <rect x="9" y="8" width="1" height="1" fill="#7c1d06"/>
+    </svg>
+  );
+}
+
+function AvatarDungeon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: 'pixelated' }}>
+      {/* capuz */}
+      <rect x="4" y="1" width="8" height="7" fill="#4c1d95"/>
+      <rect x="5" y="2" width="6" height="5" fill="#6d28d9"/>
+      {/* rosto sombra */}
+      <rect x="5" y="5" width="6" height="5" fill="#1e1b4b"/>
+      {/* olhos brilhantes */}
+      <rect x="6" y="6" width="1" height="2" fill="#a78bfa"/>
+      <rect x="9" y="6" width="1" height="2" fill="#a78bfa"/>
+      {/* corpo robe */}
+      <rect x="3" y="10" width="10" height="5" fill="#4c1d95"/>
+      <rect x="5" y="10" width="6" height="5" fill="#5b21b6"/>
+      {/* varinha */}
+      <rect x="13" y="4" width="1" height="8" fill="#d97706"/>
+      <rect x="13" y="3" width="2" height="2" fill="#fbbf24"/>
+    </svg>
+  );
+}
+
+function AvatarSpace() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: 'pixelated' }}>
+      {/* nave */}
+      <rect x="7" y="1" width="2" height="3" fill="#94a3b8"/>
+      <rect x="6" y="3" width="4" height="3" fill="#cbd5e1"/>
+      <rect x="4" y="5" width="8" height="4" fill="#94a3b8"/>
+      <rect x="2" y="7" width="12" height="3" fill="#64748b"/>
+      {/* cockpit */}
+      <rect x="6" y="4" width="4" height="3" fill="#7dd3fc"/>
+      <rect x="7" y="5" width="2" height="2" fill="#bae6fd"/>
+      {/* asas */}
+      <rect x="0" y="8" width="4" height="2" fill="#475569"/>
+      <rect x="12" y="8" width="4" height="2" fill="#475569"/>
+      {/* chama */}
+      <rect x="6" y="10" width="1" height="3" fill="#f97316"/>
+      <rect x="7" y="10" width="2" height="4" fill="#fbbf24"/>
+      <rect x="9" y="10" width="1" height="3" fill="#f97316"/>
+    </svg>
+  );
+}
+
+function AvatarCobra() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: 'pixelated' }}>
+      {/* cabeça */}
+      <rect x="5" y="2" width="6" height="5" fill="#16a34a"/>
+      <rect x="4" y="3" width="8" height="3" fill="#22c55e"/>
+      {/* olhos */}
+      <rect x="5" y="3" width="2" height="2" fill="#fff"/>
+      <rect x="9" y="3" width="2" height="2" fill="#fff"/>
+      <rect x="6" y="4" width="1" height="1" fill="#dc2626"/>
+      <rect x="10" y="4" width="1" height="1" fill="#dc2626"/>
+      {/* língua */}
+      <rect x="7" y="7" width="2" height="1" fill="#dc2626"/>
+      <rect x="6" y="8" width="1" height="1" fill="#dc2626"/>
+      <rect x="9" y="8" width="1" height="1" fill="#dc2626"/>
+      {/* corpo */}
+      <rect x="7" y="8" width="3" height="3" fill="#16a34a"/>
+      <rect x="4" y="10" width="5" height="3" fill="#22c55e"/>
+      <rect x="4" y="12" width="8" height="2" fill="#16a34a"/>
+      <rect x="9" y="10" width="3" height="5" fill="#22c55e"/>
+    </svg>
+  );
+}
+
+const AVATARES_TEMA = {
+  lava: AvatarLava,
+  dungeon: AvatarDungeon,
+  space: AvatarSpace,
+  cobra: AvatarCobra,
+};
+
+// ── Decorações de fundo por tema ───────────────────────────────────────────
+
+function DecorLava() {
+  return (
+    <div className="lobby-deco lava-deco" aria-hidden="true">
+      {/* chamas laterais */}
+      {[0,1,2,3,4].map(i => (
+        <div key={i} className="lava-chama" style={{ left: `${i * 22}%`, animationDelay: `${i * 0.3}s` }}>
+          <svg width="28" height="40" viewBox="0 0 14 20" style={{ imageRendering: 'pixelated' }}>
+            <rect x="6" y="14" width="2" height="5" fill="#f97316"/>
+            <rect x="5" y="10" width="4" height="5" fill="#fb923c"/>
+            <rect x="4" y="6" width="6" height="5" fill="#fbbf24"/>
+            <rect x="5" y="3" width="4" height="4" fill="#fb923c"/>
+            <rect x="6" y="0" width="2" height="4" fill="#fbbf24"/>
+          </svg>
+        </div>
+      ))}
+      {/* lava fluindo */}
+      <div className="lava-rio" />
+    </div>
+  );
+}
+
+function DecorDungeon() {
+  return (
+    <div className="lobby-deco dungeon-deco" aria-hidden="true">
+      {/* tochas */}
+      {[0, 1].map(i => (
+        <div key={i} className={`dungeon-tocha tocha-${i}`}>
+          <svg width="16" height="28" viewBox="0 0 8 14" style={{ imageRendering: 'pixelated' }}>
+            <rect x="3" y="6" width="2" height="7" fill="#92400e"/>
+            <rect x="2" y="3" width="4" height="4" fill="#d97706"/>
+            <rect x="3" y="1" width="2" height="3" fill="#f97316" className="tocha-fogo"/>
+            <rect x="2" y="0" width="4" height="2" fill="#fbbf24"/>
+          </svg>
+          <div className="tocha-brilho" />
+        </div>
+      ))}
+      {/* pedras do fundo */}
+      <div className="dungeon-pedras">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="pedra" style={{ left: `${i * 13}%`, bottom: `${(i % 3) * 12}px` }} />
+        ))}
       </div>
-      <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-gray-100 text-sm text-gray-800 leading-relaxed"
+    </div>
+  );
+}
+
+function DecorSpace() {
+  return (
+    <div className="lobby-deco space-deco" aria-hidden="true">
+      {/* estrelas */}
+      {[...Array(20)].map((_, i) => (
+        <div key={i} className="estrela"
+          style={{
+            left: `${(i * 37 + 11) % 100}%`,
+            top: `${(i * 53 + 7) % 100}%`,
+            width: i % 3 === 0 ? 3 : 2,
+            height: i % 3 === 0 ? 3 : 2,
+            animationDelay: `${(i * 0.23) % 2}s`,
+            animationDuration: `${1.2 + (i * 0.17) % 1.5}s`,
+          }} />
+      ))}
+      {/* planeta ao fundo */}
+      <div className="planeta">
+        <svg width="64" height="64" viewBox="0 0 32 32" style={{ imageRendering: 'pixelated' }}>
+          <rect x="10" y="2" width="12" height="28" fill="#1e3a5f" opacity="0.6"/>
+          <rect x="6" y="6" width="20" height="20" fill="#1e3a5f" opacity="0.6"/>
+          <rect x="4" y="10" width="24" height="12" fill="#1e3a5f" opacity="0.6"/>
+          {/* anel */}
+          <rect x="0" y="14" width="32" height="4" fill="#334155" opacity="0.5"/>
+          <rect x="2" y="15" width="28" height="2" fill="#475569" opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function DecorCobra() {
+  return (
+    <div className="lobby-deco cobra-deco" aria-hidden="true">
+      {/* grid de pixels */}
+      <div className="cobra-grid">
+        {[...Array(6 * 4)].map((_, i) => (
+          <div key={i} className="grid-cell" style={{ opacity: Math.random() > 0.7 ? 0.15 : 0.05 }} />
+        ))}
+      </div>
+      {/* orbes coloridas decorativas */}
+      {['#ef4444','#3b82f6','#eab308','#a855f7'].map((cor, i) => (
+        <div key={i} className="orbe-deco"
+          style={{ background: cor, left: `${15 + i * 20}%`, animationDelay: `${i * 0.5}s` }} />
+      ))}
+    </div>
+  );
+}
+
+const DECORS = { lava: DecorLava, dungeon: DecorDungeon, space: DecorSpace, cobra: DecorCobra };
+
+// ── Bolhas de chat ──────────────────────────────────────────────────────────
+
+function BolhaIA({ texto, tema, cor }) {
+  const AvatarComp = AVATARES_TEMA[tema];
+  return (
+    <div className="flex items-start gap-3 max-w-[88%]">
+      <div className={`lobby-avatar-ia lobby-avatar-${tema} shrink-0`}>
+        <AvatarComp />
+      </div>
+      <div className={`lobby-bolha-ia lobby-bolha-${tema} text-sm leading-relaxed`}
         dangerouslySetInnerHTML={{ __html: parseMarkdown(texto) }} />
     </div>
   );
 }
 
-function BolhaUsuario({ texto }) {
+function BolhaUsuario({ texto, tema }) {
   return (
     <div className="flex justify-end">
-      <div className="bg-violet-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 text-sm max-w-[75%] leading-relaxed">
+      <div className={`lobby-bolha-user lobby-bolha-user-${tema} text-sm max-w-[75%] leading-relaxed`}>
         {texto}
       </div>
     </div>
   );
 }
 
-function Digitando({ cor }) {
+function Digitando({ tema, cor }) {
+  const AvatarComp = AVATARES_TEMA[tema];
   return (
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-        style={{ background: cor, color: 'white', fontWeight: 'bold', fontSize: 16 }}>
-        ✦
+      <div className={`lobby-avatar-ia lobby-avatar-${tema} shrink-0`}>
+        <AvatarComp />
       </div>
-      <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-gray-100 flex gap-1.5 items-center">
-        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className={`lobby-bolha-ia lobby-bolha-${tema} flex gap-1.5 items-center`}>
+        <span className="lobby-dot" style={{ animationDelay: '0ms' }} />
+        <span className="lobby-dot" style={{ animationDelay: '150ms' }} />
+        <span className="lobby-dot" style={{ animationDelay: '300ms' }} />
       </div>
     </div>
   );
 }
+
+// ── Página principal ────────────────────────────────────────────────────────
 
 export default function LobbyJogo() {
   const { jogoId } = useParams();
@@ -101,13 +297,12 @@ export default function LobbyJogo() {
   const [carregando, setCarregando] = useState(false);
   const [pronto, setPronto] = useState(false);
   const [topico, setTopico] = useState('');
-  const [turno, setTurno] = useState(0); // 0=aguardando materia, 1+=livre
+  const [turno, setTurno] = useState(0);
   const fundoRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (!jogo) { navigate('/jogos'); return; }
-    // Mensagem inicial da IA
     setTimeout(() => {
       setMensagens([{ de: 'ia', texto: jogo.boasVindas }]);
     }, 400);
@@ -128,7 +323,6 @@ export default function LobbyJogo() {
     setMensagens(novasMensagens);
     setCarregando(true);
 
-    // Na primeira resposta do usuário, salva o tópico e pede mini-aula
     const ehPrimeiraMensagem = turno === 0;
     if (ehPrimeiraMensagem) setTopico(texto);
     setTurno(t => t + 1);
@@ -194,8 +388,12 @@ Seja direto, animado e didático. Sem enrolação, sem aula formal longa, sem re
 
   if (!jogo) return null;
 
+  const Decor = DECORS[jogo.tema];
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f8f8fa' }}>
+    <div className={`lobby-root lobby-${jogo.tema}`}>
+      <Decor />
+
       {/* Header com banner */}
       <div className="relative h-44 shrink-0 overflow-hidden">
         {jogo.banner ? (
@@ -206,7 +404,7 @@ Seja direto, animado e didático. Sem enrolação, sem aula formal longa, sem re
             {jogo.emoji}
           </div>
         )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.65))' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.75))' }} />
         <div className="absolute inset-0 flex flex-col justify-between p-4">
           <button onClick={() => navigate('/jogos')}
             className="self-start w-9 h-9 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white hover:bg-white/30 transition">
@@ -214,26 +412,25 @@ Seja direto, animado e didático. Sem enrolação, sem aula formal longa, sem re
           </button>
           <div>
             <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-0.5">Preparação</p>
-            <h1 className="text-white text-2xl font-black">{jogo.nome}</h1>
+            <h1 className="text-white text-2xl font-black drop-shadow-lg">{jogo.nome}</h1>
           </div>
         </div>
       </div>
 
       {/* Chat */}
-      <div ref={fundoRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ maxHeight: 'calc(100vh - 44px - 72px)' }}>
+      <div ref={fundoRef} className="lobby-chat-area flex-1 overflow-y-auto px-4 py-4 space-y-4"
+        style={{ maxHeight: 'calc(100vh - 176px - 72px)' }}>
         {mensagens.map((m, i) =>
           m.de === 'ia'
-            ? <BolhaIA key={i} texto={m.texto} cor={jogo.cor} />
-            : <BolhaUsuario key={i} texto={m.texto} />
+            ? <BolhaIA key={i} texto={m.texto} tema={jogo.tema} cor={jogo.cor} />
+            : <BolhaUsuario key={i} texto={m.texto} tema={jogo.tema} />
         )}
-        {carregando && <Digitando cor={jogo.cor} />}
+        {carregando && <Digitando tema={jogo.tema} cor={jogo.cor} />}
 
-        {/* Botão iniciar aparece após a mini-aula */}
         {pronto && !carregando && (
           <div className="flex justify-center pt-2">
             <button onClick={iniciarJogo}
-              className="px-8 py-3.5 rounded-2xl font-black text-white text-base shadow-lg transition-all hover:scale-105 active:scale-95"
-              style={{ background: jogo.cor, boxShadow: `0 8px 24px ${jogo.cor}55` }}>
+              className={`lobby-btn-iniciar lobby-btn-${jogo.tema} px-8 py-3.5 rounded-2xl font-black text-white text-base transition-all hover:scale-105 active:scale-95`}>
               Iniciar {jogo.nome} {jogo.emoji}
             </button>
           </div>
@@ -241,20 +438,18 @@ Seja direto, animado e didático. Sem enrolação, sem aula formal longa, sem re
       </div>
 
       {/* Input */}
-      <div className="shrink-0 px-4 py-3 bg-white border-t border-gray-100 flex gap-2">
+      <div className={`lobby-input-bar lobby-input-${jogo.tema} shrink-0 px-4 py-3 flex gap-2`}>
         <input
           ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && enviar()}
           placeholder={turno === 0 ? 'Ex: "equações do 2º grau", "Revolução Francesa"...' : 'Alguma dúvida antes de jogar?'}
-          className="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 transition"
-          style={{ '--tw-ring-color': jogo.cor + '66' }}
+          className={`lobby-input lobby-input-field-${jogo.tema} flex-1 rounded-2xl px-4 py-3 text-sm outline-none transition`}
           disabled={carregando}
         />
         <button onClick={enviar} disabled={!input.trim() || carregando}
-          className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-bold transition-all hover:scale-105 disabled:opacity-40"
-          style={{ background: jogo.cor }}>
+          className={`lobby-send-btn lobby-send-${jogo.tema} w-11 h-11 rounded-2xl flex items-center justify-center text-white font-bold transition-all hover:scale-105 disabled:opacity-40`}>
           ↑
         </button>
       </div>
