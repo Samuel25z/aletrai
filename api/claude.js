@@ -45,6 +45,10 @@ module.exports = async (req, res) => {
   const max_tokens = Math.min(Number(body.max_tokens) || 1024, MAX_TOKENS_CAP);
   const messages   = Array.isArray(body.messages) ? body.messages : [];
   const system     = typeof body.system === 'string' ? body.system : undefined;
+  // temperature opcional (0–1) para dar variedade às perguntas geradas
+  const temperature = body.temperature != null
+    ? Math.max(0, Math.min(1, Number(body.temperature)))
+    : undefined;
 
   if (messages.length === 0) {
     res.status(400).json({ error: { message: 'Nenhuma mensagem enviada.' } });
@@ -59,7 +63,12 @@ module.exports = async (req, res) => {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify({ model, max_tokens, ...(system ? { system } : {}), messages }),
+      body: JSON.stringify({
+        model, max_tokens,
+        ...(temperature != null ? { temperature } : {}),
+        ...(system ? { system } : {}),
+        messages,
+      }),
     });
     const data = await r.json();
     res.status(r.status).json(data);

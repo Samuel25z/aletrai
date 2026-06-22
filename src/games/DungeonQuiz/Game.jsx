@@ -16,9 +16,9 @@ function getBoss(idx) {
   return BOSSES[Math.min(idx, BOSSES.length - 1)];
 }
 
-async function buscarPerguntas(tema, materia, modoIA, qtd = 5) {
+async function buscarPerguntas(tema, materia, modoIA, qtd = 5, evitar = []) {
   if (modoIA) {
-    const ia = await gerarPerguntasJogo(tema, materia?.nome || tema, qtd);
+    const ia = await gerarPerguntasJogo(tema, materia?.nome || tema, qtd, evitar);
     if (ia && ia.length >= 3) return ia.slice(0, qtd);
   }
   const cont = await gerarConteudoJogo(tema, 'quiz');
@@ -123,11 +123,14 @@ export default function Game({ tema, materia, modoIA, onSair }) {
 
   const boss = getBoss(bossIdx);
 
+  const usadasRef = React.useRef([]); // enunciados já usados (não repetir entre bosses)
+
   // Carrega perguntas ao iniciar ou ao trocar de boss
   const carregarPerguntas = useCallback(async (bIdx) => {
     setFase('carregando');
     const b = getBoss(bIdx);
-    const pergs = await buscarPerguntas(tema, materia, modoIA, b.hp + 2); // perguntas extras por segurança
+    const pergs = await buscarPerguntas(tema, materia, modoIA, b.hp + 2, usadasRef.current); // extras por segurança
+    usadasRef.current = [...usadasRef.current, ...pergs.map(p => p.pergunta)].slice(-60);
     setPerguntas(pergs);
     setPergIdx(0);
     setBossHp(b.hp);

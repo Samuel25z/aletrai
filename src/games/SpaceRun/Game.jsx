@@ -1,15 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { gerarPerguntasJogo } from '../../services/anthropic';
-import { gerarConteudoJogo } from '../../services/mock';
-
-// ─── Busca de perguntas (IA com fallback offline) ────────────────────────────
-async function buscarPerguntas(tema, materia, qtd = 12) {
-  const ia = await gerarPerguntasJogo(tema, materia || tema, qtd);
-  if (ia && ia.length >= 3) return ia;
-  const cont = await gerarConteudoJogo(tema, 'quiz');
-  const base = cont?.perguntas || [];
-  return [...base].sort(() => Math.random() - 0.5);
-}
+import { criarBanco } from '../../services/bancoPerguntas';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const W = 420, H = 640;
@@ -127,7 +117,9 @@ function Pergunta({ perg, onResponder, cor = '#0ea5e9' }) {
   return (
     <div className="absolute inset-0 flex flex-col justify-center px-5"
       style={{ background: 'rgba(6,8,20,0.94)' }}>
-      <p className="text-cyan-400 text-xs font-black uppercase tracking-widest text-center mb-2">⚠ Campo de asteroides — responda!</p>
+      <p className="text-cyan-400 text-xs font-black uppercase tracking-widest text-center mb-2">
+        {perg._reforco ? '🔁 Revisão — você errou esta antes' : '⚠ Campo de asteroides — responda!'}
+      </p>
       <div className="bg-white/5 border border-cyan-500/30 rounded-2xl p-4 mb-4">
         <p className="text-white font-bold text-base leading-snug text-center">{perg.pergunta}</p>
       </div>
@@ -159,22 +151,24 @@ export default function Game({ tema, materia, onSair }) {
   const [estado, setEstado] = useState('carregando'); // carregando | jogando | pergunta | fim
   const [vidas, setVidas] = useState(3);
   const [pontos, setPontos] = useState(0);
-  const [perguntas, setPerguntas] = useState([]);
   const [pergAtual, setPergAtual] = useState(null);
   const [recorde, setRecorde] = useState(() => parseInt(localStorage.getItem('aletrai_spacerun_recorde') || '0', 10));
 
   const gs = useRef(null);
   const raf = useRef(null);
   const teclas = useRef({ up: false, down: false });
-  const pergIdx = useRef(0);
+  const bancoRef = useRef(null);
+  const proximaRef = useRef(null); // próxima pergunta já pronta
 
-  // Carrega perguntas
+  // Inicializa banco de perguntas e a partida
   useEffect(() => {
     let vivo = true;
     (async () => {
-      const pergs = await buscarPerguntas(tema, materia, 14);
+      const banco = criarBanco(tema, materia || tema);
+      bancoRef.current = banco;
+      await banco.prefetch();
+      proximaRef.current = await banco.proxima();
       if (!vivo) return;
-      setPerguntas(pergs.length ? pergs : []);
       iniciarPartida();
       setEstado('jogando');
     })();
@@ -193,7 +187,7 @@ export default function Game({ tema, materia, onSair }) {
     for (let i = 0; i < 60; i++) {
       gs.current.starfield.push({ x: rand(0, W), y: rand(0, H), z: rand(0.3, 1.4) });
     }
-    setVidas(3); setPontos(0); pergIdx.current = 0;
+    setVidas(3); setPontos(0);
   }
 
   const perderVida = useCallback(() => {
@@ -216,14 +210,16 @@ export default function Game({ tema, materia, onSair }) {
   }
 
   function abrirPergunta() {
-    if (!perguntas.length) { gs.current.proxPergunta = gs.current.t + 60 * 14; return; }
-    const p = perguntas[pergIdx.current % perguntas.length];
-    pergIdx.current++;
+    const p = proximaRef.current;
+    if (!p) { gs.current.proxPergunta = gs.current.t + 60 * 8; return; } // ainda carregando
     setPergAtual(p);
     setEstado('pergunta');
+    // pré-carrega a próxima em segundo plano
+    if (bancoRef.current) bancoRef.current.proxima().then(n => { proximaRef.current = n; });
   }
 
   function responder(acertou) {
+    if (bancoRef.current) bancoRef.current.registrar(pergAtual, acertou);
     setEstado('jogando');
     setPergAtual(null);
     if (acertou) {
@@ -344,12 +340,15 @@ export default function Game({ tema, materia, onSair }) {
 
   const xpGanho = Math.max(10, Math.floor(pontos / 5));
 
+  const CSS_W = `min(${W}px, 100vw)`;
+  const CSS_H = `min(${H}px, calc(100vw * ${H / W}), calc(100dvh - 90px))`;
+
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center"
+    <div className="fixed inset-0 flex flex-col items-center justify-center px-1"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #0e1430 0%, #04060f 70%)' }}>
 
       {/* HUD topo */}
-      <div className="flex items-center justify-between mb-2" style={{ width: W }}>
+      <div className="flex items-center justify-between mb-2" style={{ width: CSS_W, maxWidth: '100%' }}>
         <button onClick={() => onSair({ xpGanho })}
           className="text-gray-400 hover:text-white text-sm font-bold px-2">← Sair</button>
         <div className="flex items-center gap-3">
@@ -360,8 +359,9 @@ export default function Game({ tema, materia, onSair }) {
         </div>
       </div>
 
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ width: W, height: H }}>
-        <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', width: W, height: H, touchAction: 'none' }} />
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: CSS_W, height: CSS_H, aspectRatio: `${W} / ${H}` }}>
+        <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', width: '100%', height: '100%', touchAction: 'none' }} />
 
         {estado === 'carregando' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#060814' }}>

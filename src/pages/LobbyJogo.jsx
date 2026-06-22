@@ -134,13 +134,19 @@ export default function LobbyJogo() {
     setTurno(t => t + 1);
 
     const systemPrompt = ehPrimeiraMensagem
-      ? `Você é o assistente do jogo "${jogo.nome}" — ${jogo.descricao}. O jogador escolheu estudar: "${texto}".
-         Dê uma mini-aula objetiva e envolvente sobre esse assunto (máximo 3-4 parágrafos curtos).
-         Use linguagem animada e use **negrito** para destacar conceitos-chave.
-         No final, diga que o jogador está pronto para jogar e deseje boa sorte.
-         Seja direto e entusiasmado — este é um jogo, não uma aula formal.`
-      : `Você é o assistente do jogo "${jogo.nome}". O jogador estudou "${topico || texto}" antes de jogar.
-         Responda dúvidas de forma curta e animada. Se não houver mais dúvidas, incentive o jogador a iniciar o jogo.`;
+      ? `Você é o tutor do jogo "${jogo.nome}" — ${jogo.descricao}. O jogador quer estudar: "${texto}".
+
+Sua missão: preparar o jogador da forma MAIS EFICIENTE possível para acertar perguntas sobre esse assunto no jogo.
+
+Siga esta lógica:
+1. Se o assunto está claro e específico, dê uma MINI-AULA enxuta e estratégica em **bullets** (•), com 3 a 5 pontos. Foque no que MAIS cai em prova e no que MAIS confunde os alunos. Destaque os conceitos-chave em **negrito** e dê 1 exemplo concreto do cotidiano.
+2. Se o assunto está MUITO amplo ou vago (ex.: só "matemática" ou "história"), escolha o recorte mais importante, avise em 1 linha qual foco vai cobrir, ensine esse núcleo, e convide o jogador a pedir um subtema específico se quiser focar em outra coisa.
+3. Termine com UMA frase curta de incentivo dizendo que ele já pode iniciar o jogo.
+
+Seja direto, animado e didático. Sem enrolação, sem aula formal longa, sem repetir a pergunta do jogador. Máximo ~180 palavras.`
+      : `Você é o tutor do jogo "${jogo.nome}". O jogador está estudando "${topico || texto}".
+         Responda a dúvida de forma curta, clara e animada, com um exemplo quando ajudar. Use **negrito** nos termos importantes.
+         Se perceber que não há mais dúvidas, incentive o jogador a iniciar o jogo. Máximo ~120 palavras.`;
 
     try {
       const apiKey = getApiKey();
@@ -241,7 +247,7 @@ export default function LobbyJogo() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && enviar()}
-          placeholder={turno === 0 ? 'Digite a matéria que quer estudar...' : 'Alguma dúvida antes de jogar?'}
+          placeholder={turno === 0 ? 'Ex: "equações do 2º grau", "Revolução Francesa"...' : 'Alguma dúvida antes de jogar?'}
           className="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 transition"
           style={{ '--tw-ring-color': jogo.cor + '66' }}
           disabled={carregando}

@@ -82,9 +82,11 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col lg:ml-60">
 
         {/* Header mobile (< lg) */}
-        <header className="lg:hidden flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100 sticky top-0 z-10">
-          <LogoMarca size={22} variant="dark" />
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-xs font-bold">
+        <header className="lg:hidden flex items-center justify-between gap-2 px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-10">
+          <div className="shrink-0">
+            <LogoMarca size={22} variant="dark" />
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 text-xs font-bold shrink-0">
             <span>{membro.emoji}</span>
             <span>{membro.nome}</span>
           </div>

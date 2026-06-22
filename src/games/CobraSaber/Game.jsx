@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { gerarPerguntasJogo } from '../../services/anthropic';
-import { gerarConteudoJogo } from '../../services/mock';
-
-async function buscarPerguntas(tema, materia, qtd = 12) {
-  const ia = await gerarPerguntasJogo(tema, materia || tema, qtd);
-  if (ia && ia.length >= 3) return ia;
-  const cont = await gerarConteudoJogo(tema, 'quiz');
-  const base = cont?.perguntas || [];
-  return [...base].sort(() => Math.random() - 0.5);
-}
+import { criarBanco } from '../../services/bancoPerguntas';
 
 // ─── Grade ────────────────────────────────────────────────────────────────────
 const COLS = 15, ROWS = 17, CELL = 26;
@@ -99,28 +90,29 @@ export default function Game({ tema, materia, onSair }) {
   const [estado, setEstado] = useState('carregando');
   const [vidas, setVidas] = useState(3);
   const [pontos, setPontos] = useState(0);
-  const [perguntas, setPerguntas] = useState([]);
   const [pergAtual, setPergAtual] = useState(null);
   const [flash, setFlash] = useState(null); // 'ok' | 'erro'
   const [recorde, setRecorde] = useState(() => parseInt(localStorage.getItem('aletrai_cobra_recorde') || '0', 10));
 
   const gs = useRef(null);
   const raf = useRef(null);
-  const pergIdx = useRef(0);
+  const bancoRef = useRef(null);
+  const proximaRef = useRef(null);  // próxima pergunta já pronta
+  const errouRef = useRef(false);   // errou algum orbe na pergunta atual?
 
-  // refs espelho para uso dentro do loop de animação
+  // ref espelho para uso dentro do loop de animação
   const pergAtualRef = useRef(pergAtual);
-  const perguntasRef = useRef(perguntas);
   useEffect(() => { pergAtualRef.current = pergAtual; }, [pergAtual]);
-  useEffect(() => { perguntasRef.current = perguntas; }, [perguntas]);
 
   useEffect(() => {
     let vivo = true;
     (async () => {
-      const pergs = await buscarPerguntas(tema, materia, 14);
+      const banco = criarBanco(tema, materia || tema);
+      bancoRef.current = banco;
+      await banco.prefetch();
+      proximaRef.current = await banco.proxima();
       if (!vivo) return;
-      setPerguntas(pergs);
-      iniciarPartida(pergs);
+      iniciarPartida();
       setEstado('jogando');
     })();
     return () => { vivo = false; };
@@ -132,22 +124,24 @@ export default function Game({ tema, materia, onSair }) {
     return [{ x: 5, y: cy }, { x: 4, y: cy }, { x: 3, y: cy }];
   }
 
-  function carregarPergunta(pergs, snake) {
-    if (!pergs.length) return;
-    const p = pergs[pergIdx.current % pergs.length];
-    pergIdx.current++;
+  // carrega a próxima pergunta no tabuleiro (usa a que já está pronta)
+  function carregarPergunta(snake) {
+    const p = proximaRef.current;
+    if (!p) return;
+    errouRef.current = false;
     setPergAtual(p);
     gs.current.orbs = novosOrbes(p, snake);
+    // pré-carrega a próxima em segundo plano
+    if (bancoRef.current) bancoRef.current.proxima().then(n => { proximaRef.current = n; });
   }
 
-  function iniciarPartida(pergs) {
+  function iniciarPartida() {
     gs.current = {
       snake: novaCobra(), dir: { x: 1, y: 0 }, nextDir: { x: 1, y: 0 },
       orbs: [], acc: 0, intervalo: 175, t: 0, crescer: 0,
     };
-    pergIdx.current = 0;
     setVidas(3); setPontos(0); setFlash(null);
-    carregarPergunta(pergs, gs.current.snake);
+    carregarPergunta(gs.current.snake);
   }
 
   const perderVida = useCallback((reset = true) => {
@@ -211,12 +205,16 @@ export default function Game({ tema, materia, onSair }) {
         const orbe = g.orbs.find(o => o.x === nh.x && o.y === nh.y);
         if (orbe) {
           if (orbe.idx === pergAtualRef.current?.correta) {
+            // só conta como acerto "limpo" se não errou nenhum orbe nesta pergunta
+            if (!errouRef.current && bancoRef.current) bancoRef.current.registrar(pergAtualRef.current, true);
             setPontos(p => p + 100);
             g.crescer += 2;
             mostrarFlash('ok');
-            carregarPergunta(perguntasRef.current, g.snake);
+            carregarPergunta(g.snake);
             g.intervalo = Math.max(95, g.intervalo - 4); // acelera devagar
           } else {
+            errouRef.current = true;
+            if (bancoRef.current) bancoRef.current.registrar(pergAtualRef.current, false);
             setPontos(p => Math.max(0, p - 20));
             mostrarFlash('erro');
             g.orbs = g.orbs.filter(o => o !== orbe);
@@ -272,7 +270,7 @@ export default function Game({ tema, materia, onSair }) {
     g.nextDir = { x: dx, y: dy };
   }
 
-  function tentarDeNovo() { iniciarPartida(perguntas); setEstado('jogando'); }
+  function tentarDeNovo() { iniciarPartida(); setEstado('jogando'); }
 
   const xpGanho = Math.max(10, Math.floor(pontos / 4));
   const Dpad = ({ icon, dx, dy, cls }) => (
@@ -283,12 +281,14 @@ export default function Game({ tema, materia, onSair }) {
     </button>
   );
 
+  const CSS_W = `min(${W}px, 100vw)`;
+
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-y-auto py-4"
+    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-y-auto py-4 px-1"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #0c2a18 0%, #04100a 70%)' }}>
 
       {/* HUD topo */}
-      <div className="flex items-center justify-between mb-2" style={{ width: W }}>
+      <div className="flex items-center justify-between mb-2" style={{ width: CSS_W, maxWidth: '100%' }}>
         <button onClick={() => onSair({ xpGanho })}
           className="text-gray-400 hover:text-white text-sm font-bold px-1">← Sair</button>
         <div className="flex items-center gap-3">
@@ -302,7 +302,7 @@ export default function Game({ tema, materia, onSair }) {
       {/* Pergunta atual */}
       <div className="mb-2 px-3 py-2.5 rounded-xl text-center transition-colors"
         style={{
-          width: W,
+          width: CSS_W, maxWidth: '100%',
           background: flash === 'ok' ? 'rgba(34,197,94,0.25)' : flash === 'erro' ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.1)',
         }}>
@@ -311,8 +311,9 @@ export default function Game({ tema, materia, onSair }) {
         </p>
       </div>
 
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ width: W, height: H }}>
-        <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', width: W, height: H }} />
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: CSS_W, maxWidth: '100%', aspectRatio: `${W} / ${H}` }}>
+        <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', width: '100%', height: '100%' }} />
 
         {estado === 'carregando' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#06140c' }}>
@@ -330,7 +331,7 @@ export default function Game({ tema, materia, onSair }) {
 
       {/* Legenda das opções */}
       {pergAtual && estado === 'jogando' && (
-        <div className="grid grid-cols-2 gap-1.5 mt-2" style={{ width: W }}>
+        <div className="grid grid-cols-2 gap-1.5 mt-2" style={{ width: CSS_W, maxWidth: '100%' }}>
           {pergAtual.opcoes.slice(0, 4).map((op, i) => (
             <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs"
               style={{ background: 'rgba(255,255,255,0.05)' }}>

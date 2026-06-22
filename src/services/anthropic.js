@@ -85,31 +85,42 @@ Aqui você aprende conversando e praticando com jogos reais.
 }
 
 // ─── Geração de perguntas para os jogos (via Claude API) ─────────────────────
-export async function gerarPerguntasJogo(tema, materia, quantidade = 12) {
-  const prompt = `Gere ${quantidade} perguntas de múltipla escolha sobre "${tema}" para estudantes de "${materia}".
+// evitar: array de enunciados já usados, para a IA NÃO repetir.
+export async function gerarPerguntasJogo(tema, materia, quantidade = 12, evitar = []) {
+  const nonce = Math.random().toString(36).slice(2, 8); // semente p/ variar a cada chamada
+  const blocoEvitar = evitar.length
+    ? `\n\nJÁ FORAM USADAS estas perguntas — gere perguntas DIFERENTES (outros ângulos, subtemas e fatos), NÃO repita nenhuma delas:\n- ${evitar.slice(-40).join('\n- ')}`
+    : '';
 
-Responda SOMENTE com JSON válido — sem texto antes ou depois, sem markdown, sem explicações. Formato exato:
+  const prompt = `Você é um professor especialista em "${materia}". Pense profundamente sobre o tema "${tema}" e crie ${quantidade} perguntas de múltipla escolha realmente boas.
+
+Antes de escrever, explore mentalmente o tema em vários ângulos: definições, causas e consequências, exemplos do cotidiano, datas/dados, comparações, aplicações práticas, erros comuns e pegadinhas. Cubra SUBTÓPICOS DIFERENTES — nada de várias perguntas sobre o mesmo detalhe.
+
+Responda SOMENTE com JSON válido — sem texto antes ou depois, sem markdown. Formato exato:
 [
   {
     "pergunta": "texto da pergunta aqui?",
     "opcoes": ["opção A", "opção B", "opção C", "opção D"],
     "correta": 0,
-    "explicacao": "frase curta explicando a resposta correta"
+    "explicacao": "frase curta explicando por que a correta está certa"
   }
 ]
 
 Regras:
-- Perguntas claras e objetivas sobre ${tema}
-- 4 opções por pergunta, apenas 1 correta
-- "correta" é o índice 0-3 da opção certa
-- Variar dificuldade: 4 fáceis, 5 médias, 3 difíceis
+- Profundidade real sobre ${tema}: nada de perguntas genéricas tipo "o que é X?" repetidas
+- Cada pergunta aborda um aspecto DIFERENTE do tema (sem redundância entre elas)
+- 4 opções plausíveis por pergunta, apenas 1 correta; distratores que façam pensar
+- "correta" é o índice 0-3 da opção certa (varie a posição da correta)
+- Dificuldade progressiva: ~40% fáceis, ~40% médias, ~20% difíceis
 - Linguagem acessível para estudantes brasileiros
-- NÃO use markdown no JSON`;
+- NÃO use markdown no JSON
+- Semente de variação: ${nonce}${blocoEvitar}`;
 
   try {
     const response = await chamarClaude({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
+      temperature: 1,
       messages: [{ role: 'user', content: prompt }],
     });
 
