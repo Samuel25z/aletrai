@@ -295,8 +295,8 @@ const CATS = [
   { id: 'geral',        label: 'Geral',        cor: '#0ea5e9', banner: null },
   { id: 'chao-e-lava',  label: 'Chão é Lava',  cor: '#f97316', banner: '/banners/chao-e-lava.jpg' },
   { id: 'dungeon-quiz', label: 'Dungeon Quiz',  cor: '#7c3aed', banner: '/banners/Dungeon.jpg' },
-  { id: 'space-run',    label: 'Space Run',    cor: '#0ea5e9', banner: null },
-  { id: 'cobra-saber',  label: 'Cobra do Saber', cor: '#22c55e', banner: null },
+  { id: 'space-run',    label: 'Space Run',    cor: '#0ea5e9', banner: '/banners/space-run.jpg' },
+  { id: 'cobra-saber',  label: 'Cobra do Saber', cor: '#22c55e', banner: '/banners/cobra-saber.png' },
 ];
 
 // ── Componente ────────────────────────────────────────────────────────────────

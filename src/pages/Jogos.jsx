@@ -204,6 +204,7 @@ const JOGOS = [
     cor: '#0ea5e9',
     bg: '#f0f9ff',
     emoji: '🚀',
+    banner: '/banners/space-run.jpg',
   },
   {
     id: 'cobra-saber',
@@ -215,6 +216,7 @@ const JOGOS = [
     cor: '#22c55e',
     bg: '#f0fdf4',
     emoji: '🐍',
+    banner: '/banners/cobra-saber.png',
   },
 ];
 
